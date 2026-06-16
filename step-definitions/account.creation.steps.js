@@ -1,5 +1,4 @@
 const { Given, When, Then } = require('@wdio/cucumber-framework');
-const { logInSalesforce } = require('../utam-helper');
 const {
     AppLauncherMenu,
     RecordActionWrapper,

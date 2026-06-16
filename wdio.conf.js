@@ -3,12 +3,11 @@ const os = require('os');
 
 const { UtamWdioService } = require('wdio-utam-service');
 const AllureReporter = require('@wdio/allure-reporter');
-const reportObj = require('./reporterUtils/generateHTMLReport.js');
 const { removeSync } = require('fs-extra');
-const cucumberJson = require('wdio-cucumberjs-json-reporter') ;
 // use prefix 'DEBUG=true' to run test in debug mode
 const { DEBUG } = process.env;
 const TIMEOUT = DEBUG ? 60 * 1000 * 30 : 60 * 1000;
+const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours by default
 
 exports.config = {
   runner: 'local',
@@ -32,7 +31,7 @@ exports.config = {
   logLevel: 'debug',
   bail: 0,
   // timeout for all waitFor commands
-  waitforTimeout: TIMEOUT,
+  waitforTimeout: SESSION_TIMEOUT,
   connectionRetryTimeout: 120000,
   connectionRetryCount: 3,
   //automationProtocol: 'webdriver',
@@ -54,7 +53,11 @@ exports.config = {
   before: async function (capabilities, specs) {
     await browser.setWindowSize(1920, 1080);
     const { Given, When, Then } = require('@cucumber/cucumber');
-    [global.Given, global.When, global.Then] = [Given, When, Then]
+    [global.Given, global.When, global.Then] = [Given, When, Then];
+
+    const loginPage = require('./utam-helper.js');  // load login file
+    await loginPage.logInSalesforce();
+
   },
 
   beforeScenario: async function (capabilities, specs) {
@@ -64,15 +67,18 @@ exports.config = {
 
   afterStep: async function (step, scenario, result, context) {
     if (!result.passed) {
+      const cucumberJson = require('wdio-cucumberjs-json-reporter');
       await cucumberJson.attach(await browser.takeScreenshot(), 'image/png');
     }
   },
 
   afterScenario: async function (world, result, context) {
+    const cucumberJson = require('wdio-cucumberjs-json-reporter');
     await cucumberJson.attach(await browser.takeScreenshot(), 'image/png');
   },
 
   onComplete: async (exitCode, config, capabilities, results) => {
+    const reportObj = require('./reporterUtils/generateHTMLReport.js');
     reportObj.generateHTMLReport();
   },
 
@@ -118,7 +124,7 @@ exports.config = {
   // If you are using Cucumber you need to specify the location of your step definitions.
   cucumberOpts: {
     // <string[]> (file/dir) require files before executing features
-    require: ['./features/step-definitions/**/*.js'],
+    require: ['./step-definitions/**/*.js'],
     // <boolean> show full backtrace for errors
     backtrace: false,
     // <string[]> ("extension:module") require files with the given EXTENSION after requiring MODULE (repeatable)
@@ -140,7 +146,7 @@ exports.config = {
     // <string> (expression) only execute the features or scenarios with tags matching the expression
     tagExpression: '',
     // <number> timeout for step definitions
-    timeout: 60000,
+    timeout: 120000,
     // <boolean> Enable this config to treat undefined definitions as warnings.
     ignoreUndefinedDefinitions: false
   }

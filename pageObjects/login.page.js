@@ -7,11 +7,12 @@ let baseUrl = process.env.BASE_URL;
 let scenarioContext = require('@wdio/cucumber-framework');
 let Page = require('./page.js');
 const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours by default
-const {
+import {
     AppLauncherMenu,
+    RecordActionWrapper,
+    ObjectHome,
     DesktopLayoutContainer
-} = require('../pageObjects/index.js');
-
+} from '../pageObjects/index.js';
 class LoginPage extends Page {
     async logInSalesforce() {
         // Check environment variables
@@ -54,6 +55,9 @@ class LoginPage extends Page {
         const search = await (await menu.getSearchBar()).getLwcInput();
         await search.setText(appName);
 
+
+        // retry getItems() until search results are available — implicitTimeout is 0
+        // so UTAM does not wait internally when search results are still loading
         let items;
         await browser.waitUntil(
             async () => {
@@ -64,22 +68,40 @@ class LoginPage extends Page {
                     return false;
                 }
             },
-            { timeout: 25000, interval: 500 }
+            { timeout: 40000, interval: 500, timeoutMsg: 'App Launcher search returned no items' }
         );
 
+        // find the item whose first line matches exactly 'Sales' to avoid clicking
+        // 'Sales Console' or other apps with 'Sales' in the name
         let targetItem = items[0];
         for (const item of items) {
             try {
                 const text = await (await item.getRoot()).getText();
-                if (text.split('\n')[0].trim() === appName) {
+                if (text.split('\n')[0].trim() === 'Sales') {
                     targetItem = item;
                     break;
                 }
             } catch {
-                // skip
+                // skip unreadable item
             }
         }
         await (await targetItem.getRoot()).click();
+
+        // the app context switch is asynchronous — the URL changes immediately but
+        // the nav bar app name updates shortly after; retry until it shows 'Sales'
+        await browser.waitUntil(
+            async () => {
+                try {
+                    const c = await utam.load(DesktopLayoutContainer);
+                    const nav = await c.getAppNav();
+                    const name = await (await nav.getAppName()).getText();
+                    return name === 'Sales';
+                } catch {
+                    return false;
+                }
+            },
+            { timeout: 40000, interval: 1000, timeoutMsg: 'App context did not switch to Sales within 30s' }
+        );
     }
 
     async getAppContextName(appName) {
