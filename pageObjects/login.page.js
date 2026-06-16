@@ -4,16 +4,17 @@ dotenv.config();*/
 //import * as Constants from "../utils/userDetails.js";
 
 let baseUrl = process.env.BASE_URL;
-let scenarioContext = require('@wdio/cucumber-framework');
 let Page = require('./page.js');
+const BasePage = require('./base.page.js');
 const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours by default
-import {
+const {
     AppLauncherMenu,
     RecordActionWrapper,
     ObjectHome,
     DesktopLayoutContainer
-} from '../pageObjects/index.js';
-class LoginPage extends Page {
+} = require('../pageObjects/index.js');
+
+class LoginPage extends BasePage {
     async logInSalesforce() {
         // Check environment variables
         ['SALESFORCE_LOGIN_URL', 'SALESFORCE_LOGIN_TIME'].forEach((varName) => {
@@ -53,8 +54,8 @@ class LoginPage extends Page {
 
         const menu = await utam.load(AppLauncherMenu);
         const search = await (await menu.getSearchBar()).getLwcInput();
+        await browser.pause(2000);
         await search.setText(appName);
-
 
         // retry getItems() until search results are available — implicitTimeout is 0
         // so UTAM does not wait internally when search results are still loading
@@ -62,14 +63,13 @@ class LoginPage extends Page {
         await browser.waitUntil(
             async () => {
                 try {
-                    const menu = await utam.load(AppLauncherMenu);
                     items = await menu.getItems();
                     return items.length > 0;
                 } catch {
                     return false;
                 }
             },
-            { timeout: 40000, interval: 500, timeoutMsg: 'App Launcher search returned no items' }
+            { timeout: 25000, interval: 500, timeoutMsg: 'App Launcher search returned no items' }
         );
 
         // find the item whose first line matches exactly 'Sales' to avoid clicking
@@ -78,7 +78,7 @@ class LoginPage extends Page {
         for (const item of items) {
             try {
                 const text = await (await item.getRoot()).getText();
-                if (text.split('\n')[0].trim() === 'Sales') {
+                if (text.split('\n')[0].trim() === appName) {
                     targetItem = item;
                     break;
                 }
@@ -96,7 +96,7 @@ class LoginPage extends Page {
                     const c = await utam.load(DesktopLayoutContainer);
                     const nav = await c.getAppNav();
                     const name = await (await nav.getAppName()).getText();
-                    return name === 'Sales';
+                    return name === appName;
                 } catch {
                     return false;
                 }
@@ -105,20 +105,10 @@ class LoginPage extends Page {
         );
     }
 
-    async getAppContextName(appName) {
-        await browser.waitUntil(
-            async () => {
-                try {
-                    const c = await utam.load(DesktopLayoutContainer);
-                    const nav = await c.getAppNav();
-                    const name = await (await nav.getAppName()).getText();
-                    return name === appName;
-                } catch {
-                    return false;
-                }
-            },
-            { timeout: 40000, interval: 1000 }
-        );
+    async getAppContextName() {
+        const appNavAfterNav = await (await utam.load(DesktopLayoutContainer)).getAppNav();
+        const appName = await (await appNavAfterNav.getAppName()).getText();
+        return appName
     }
 }
 module.exports = new LoginPage();
