@@ -62,6 +62,7 @@ class LoginPage extends Page {
         await browser.waitUntil(
             async () => {
                 try {
+                    const menu = await utam.load(AppLauncherMenu);
                     items = await menu.getItems();
                     return items.length > 0;
                 } catch {
