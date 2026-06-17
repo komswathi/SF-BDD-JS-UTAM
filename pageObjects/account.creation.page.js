@@ -8,10 +8,10 @@ const SESSION_TIMEOUT = 2 * 60 * 60 * 1000;
 
 let listViewHeader;
 let listViewName;
-const dropdownFields = new Set(['RATING', 'TYPE', 'OWNERSHIP', 'INDUSTRY', 'BILLING_COUNTRY', 'SHIPPING_COUNTRY', 'CUSTOMER_PRIORITY']);
+const dropdownFields = new Set(['RATING', 'TYPE', 'OWNERSHIP', 'INDUSTRY']);
 const baseInputFields = new Set(['ACCOUNT_NAME', 'ACCOUNT_NUMBER', 'ACCOUNT_SITE', 'TICKER_SYMBOL', 'ANNUAL_REVENUE', 'SIC_CODE']);
-const inputFields = new Set(['PHONE', 'FAX', 'WEBSITE', 'EMPLOYEES', 'SLA_SERIAL_NUMBER', 'BILLING_CITY', 'SHIPPING_CITY', 'BILLING_ZIP/POSTAL_CODE', 'SHIPPING_ZIP/POSTAL_CODE']);
-const textAreaFields = new Set(['BILLING_STREET', 'SHIPPING_STREET', 'DESCRIPTION']);
+const inputFields = new Set(['PHONE', 'FAX', 'WEBSITE', 'EMPLOYEES', 'SLA_SERIAL_NUMBER']);
+//const textAreaFields = new Set(['BILLING_STREET', 'SHIPPING_STREET', 'DESCRIPTION']);
 const fieldData = {
     'Rating': 'Hot',
     'Account Name': 'UTAM Test Account',
@@ -27,14 +27,6 @@ const fieldData = {
     'Employees': '4',
     'Annual Revenue' : '2345',
     'SIC Code' : '1234567',
-    'Billing Country' : 'United Kingdom',
-    'Billing Street': 'test',
-    'Billing City' : 'London',
-    'Billing Zip/Postal Code' : 'ABC DEF',
-    'Shipping Country': 'United Kingdom',
-    'Shipping Street' : 'test',
-    'Shipping City' : 'London',
-    'Shipping Zip/Postal Code' : 'ABC DEF',
     'Customer Priority': 'Low',
     'SLA' : 'Silver',
     'SLA Expiration Date' : '',
@@ -45,8 +37,20 @@ const fieldData = {
     'Description': 'test'
 };
 
+const addressData = {
+    'Billing Country' : 'United Kingdom',
+    'Billing Street': 'test',
+    'Billing City' : 'London',
+    'Billing Zip/Postal Code' : 'ABC DEF',
+    'Shipping Country': 'United Kingdom',
+    'Shipping Street' : 'test',
+    'Shipping City' : 'London',
+    'Shipping Zip/Postal Code' : 'ABC DEF',
+}
+
 const {
     AppLauncherMenu,
+    RecordLayoutItem,
     RecordActionWrapper,
     ObjectHome,
     DesktopLayoutContainer
@@ -85,36 +89,83 @@ class AccountCreation extends BasePage {
         const recordForm = await modal.getRecordForm();
         const recordLayout = await recordForm.getRecordLayout();
         await recordLayout.waitForSections();
-        await this.fillFormFields(recordLayout, fieldData);
+        await this.fillAccountInformation(recordLayout, fieldData);
+        //await this.fillAddressInformation(recordLayout, addressData);
+        // click modal save button and wait for modal to close
+        await recordForm.clickFooterButton('Save');
+        await modal.waitForAbsence();
     }
 
-    async fillFormFields(recordLayout, fieldData) {
+    async verifyAccountCreatedSuccessMessage() {
+        const message = 'Account "gertge" was created.';
+        const regex = /Account ".+?" was created\./;
+        expect(message).toMatch(regex);
+    }
+
+    async fillAddressInformation(recordLayout, addressData) {
         const sections = await recordLayout.getSections();
+        let addressInformationSection;
         for (const section of sections) {
+            const sectionTitle = await section.getSectionTitle();
+            if (sectionTitle === 'Address Information') {
+                addressInformationSection = await section;
+                break;
+            }
             const rows = await section.getRows();
             for (const row of rows) {
                 const items = await row.getItems();
                 for (const item of items) {
-                    const label = await item.getLabelText();
-                    let fieldName;
-                    if(label != null) {
-                        fieldName = label.replaceAll(' ', '_').toUpperCase();
+                    const inputAddresses = await item.getInputAddress();
+                    for (const inputAddress of inputAddresses) {
+                        const lightningInputs = await inputAddress.getInputAddress();
+                        for (const lightningInput of lightningInputs) {
+                            const lightningInputs = await inputAddress.getInputAddress();
+                        }
+
                     }
-                    const value = fieldData[label];
-                    if (!value)
-                        continue;
-                    if (dropdownFields.has(fieldName)) {
-                        await this.chooseDropdown(item, value);
-                    } else if (baseInputFields.has(fieldName)) {
-                        await this.enterBaseInputField(item, value);
-                    } else if (inputFields.has(fieldName)) {
-                        await this.enterInputField(item, value);
-                    } else if(textAreaFields.has(fieldName)) {
-                        await this.enterTextField(item, value);
-                    }
+                }
+
+            }
+
+        }
+        let addressInformation = await addressInformationSection.getRows().get(0);
+        let addressInformationItem = await addressInformation.getItems().get(0);
+        let inputAddress = await addressInformationItem.getInputAddress();
+    }
+
+    async fillAccountInformation(recordLayout, fieldData) {
+        const sections = await recordLayout.getSections();
+        let accountInformationSection;
+        for (const section of sections) {
+            const sectionTitle = await section.getSectionTitle();
+            const sectionText = await sectionTitle.getText();
+            if (sectionText === 'Account Information') {
+                accountInformationSection = await section;
+                break;
+            }
+        }
+        const rows = await accountInformationSection.getRows();
+        for (const row of rows) {
+            const items = await row.getItems();
+            for (const item of items) {
+                const label = await item.getLabelText();
+                let fieldName;
+                if (label != null) {
+                    fieldName = label.replaceAll(' ', '_').toUpperCase();
+                }
+                const value = fieldData[label];
+                if (!value)
+                    continue;
+                if (dropdownFields.has(fieldName)) {
+                    await this.chooseDropdown(item, value);
+                } else if (baseInputFields.has(fieldName)) {
+                    await this.enterBaseInputField(item, value);
+                } else if (inputFields.has(fieldName)) {
+                    await this.enterInputField(item, value);
                 }
             }
         }
+
     }
 
     async chooseDropdown(item, value) {
