@@ -3,6 +3,7 @@ const os = require('os');
 
 const { UtamWdioService } = require('wdio-utam-service');
 const AllureReporter = require('@wdio/allure-reporter');
+const scenarioContext = require('./context/scenario_context.js')
 // use prefix 'DEBUG=true' to run test in debug mode
 const { DEBUG } = process.env;
 const TIMEOUT = DEBUG ? 60 * 1000 * 30 : 60 * 1000;
@@ -47,12 +48,12 @@ exports.config = {
     await browser.setWindowSize(1920, 1080);
   },
 
-  /* afterTest: async function (test, context, { error, duration, passed }) {
-      let screenshot = await browser.takeScreenshot();
-      await browser.allure.addAttachment('screenshot', Buffer.from(screenshot, 'base64'), 'image/png');
-  },*/
+   beforeTest: async function (test, context, { error, duration, passed }) {
+     scenarioContext.getScenarioContext().clear();
+   },
 
   afterTest: async function (test, context, { error, duration, passed }) {
+    scenarioContext.getScenarioContext().clear();
     let screenshot = await browser.takeScreenshot();
     const buffer = Buffer.from(screenshot, 'base64');
     AllureReporter.addAttachment(`screenshot_${Date.now()}`, buffer, 'image/png');

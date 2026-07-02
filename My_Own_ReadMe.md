@@ -1,3 +1,11 @@
+https://developer.salesforce.com/tools/salesforcecli
+
+https://orgfarm-caf1480b47-dev-ed.develop.my.salesforce.com/
+komswathi.cdbfaec6bff4@agentforce.com
+Jaanshimu_143
+
+
+
 npm install
 
 sf org login web --set-default

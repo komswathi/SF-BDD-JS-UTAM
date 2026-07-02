@@ -5,6 +5,7 @@ dotenv.config();*/
 
 let BasePage = require('./base.page.js');
 const SESSION_TIMEOUT = 2 * 60 * 60 * 1000;
+const scenarioContext = require('../context/scenario_context.js')
 
 let listViewHeader;
 let listViewName;
@@ -53,7 +54,9 @@ const {
     RecordLayoutItem,
     RecordActionWrapper,
     ObjectHome,
-    DesktopLayoutContainer
+    DesktopLayoutContainer,
+    SetupGenCanvas,
+    DataTable
 } = require('../pageObjects/index.js');
 class AccountCreation extends BasePage {
 
@@ -94,6 +97,36 @@ class AccountCreation extends BasePage {
         // click modal save button and wait for modal to close
         await recordForm.clickFooterButton('Save');
         await modal.waitForAbsence();
+        await browser.pause(4000);
+
+    }
+
+    async searchForAccount() {
+        await browser.pause(4000);
+        await this.chooseAppNavBar('Accounts');
+        const accountName = scenarioContext.getContext('Account Name');
+        const pageObject = await utam.load(ObjectHome);
+        const listViewMgr = await pageObject.getListViewManager();
+        const commonList = await listViewMgr.getCommonListInternal();
+        const header = await commonList.getHeader();
+        const searchBar = await header.getSearchBar();
+        const searchBarInput = await searchBar.getInput();
+        await searchBarInput.setText(accountName);
+        await searchBarInput.focus();
+    }
+
+    async verifyAccountDisplay() {
+        let expectedAccountName = scenarioContext.getContext('Account Name')
+        const pageObject = await utam.load(ObjectHome);
+        const listViewMgr = await pageObject.getListViewManager();
+        const commonList = await listViewMgr.getCommonListInternal();
+        const displayManager = await commonList.getDisplayManager();
+        const primaryDisplay = await displayManager.getDisplay();
+        const  grid = await primaryDisplay.getDisplayGrid();
+        const dataTable = await grid.getDatatable();
+        const actualAccountNameEle = await dataTable.getRow(1);
+        const actualAccountName = await actualAccountNameEle.getText();
+        expect(actualAccountName).toEqual(expectedAccountName);
     }
 
     async verifyAccountCreatedSuccessMessage() {
@@ -133,6 +166,15 @@ class AccountCreation extends BasePage {
         let inputAddress = await addressInformationItem.getInputAddress();
     }
 
+    randomString(length = 10) {
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+
     async fillAccountInformation(recordLayout, fieldData) {
         const sections = await recordLayout.getSections();
         let accountInformationSection;
@@ -153,12 +195,16 @@ class AccountCreation extends BasePage {
                 if (label != null) {
                     fieldName = label.replaceAll(' ', '_').toUpperCase();
                 }
-                const value = fieldData[label];
+                let value = fieldData[label];
                 if (!value)
                     continue;
                 if (dropdownFields.has(fieldName)) {
                     await this.chooseDropdown(item, value);
                 } else if (baseInputFields.has(fieldName)) {
+                    if(label === 'Account Name') {
+                        value = value + ' ' + Date.now();
+                        scenarioContext.setContext('Account Name' , value);
+                    }
                     await this.enterBaseInputField(item, value);
                 } else if (inputFields.has(fieldName)) {
                     await this.enterInputField(item, value);
