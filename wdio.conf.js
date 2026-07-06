@@ -1,6 +1,8 @@
 require('dotenv').config();
 const os = require('os');
 const path = require('path');
+const reportObj = require('./reporterUtils/generateHTMLReport.js');
+const { removeSync } = require('fs-extra');
 
 const { UtamWdioService } = require('wdio-utam-service');
 const AllureReporter = require('@wdio/allure-reporter');
@@ -44,6 +46,11 @@ exports.config = {
       }
     ]
   ],
+
+  onPrepare: async function (config, capabilities) {
+    await removeSync('./report');
+  },
+
   before: async function () {
     await browser.setWindowSize(1920, 1080);
   },
@@ -54,10 +61,15 @@ exports.config = {
   },*/
 
   afterTest: async function (test, context, { error, duration, passed }) {
-    let screenshot = await browser.takeScreenshot();
+    let screenshot = browser.takeScreenshot();
     const buffer = Buffer.from(screenshot, 'base64');
     AllureReporter.addAttachment(`screenshot_${Date.now()}`, buffer, 'image/png');
   },
+
+  onComplete: async (exitCode, config, capabilities, results) => {
+    reportObj.generateHTMLReport();
+  },
+
 
   framework: 'cucumber',
   reporters: [
@@ -83,7 +95,7 @@ exports.config = {
   ],
 
   cucumberOpts: {
-    require: ['./step-definitions/account-creation.steps.js'],
+    require: ['./step-definitions/**/*.js'],
     backtrace: false,
     requireModule: [],
     dryRun: false,

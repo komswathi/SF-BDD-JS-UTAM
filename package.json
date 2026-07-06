@@ -69,7 +69,8 @@
     "wdio-chromedriver-service": "^7.3.0",
     "wdio-cucumberjs-json-reporter": "^4.3.0",
     "wdio-utam-service": "^3.3.0",
-    "winston": "^3.19.0"
+    "winston": "^3.19.0",
+    "fs-extra" : "^11.3.6"
   },
   "lint-staged": {
     "**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}": [

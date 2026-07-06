@@ -8,7 +8,7 @@ const scenarioContext = require('../context/scenario_context');
 
 Given('I am logged into Salesforce', async () => {
   await loginPage.logInSalesforce();
-  scenarioContext.c();
+  scenarioContext.getScenarioContext().clear();
 });
 
 When('I open app launcher and choose {string}', async (appName) => {
