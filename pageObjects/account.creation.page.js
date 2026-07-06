@@ -1,38 +1,39 @@
 const logger = require('../utils/logger');
 let BasePage = require('./base.page.js');
+const scenarioContext = require('../context/scenario_context');
 
 let listViewHeader;
 let listViewName;
+
+const {
+    RecordActionWrapper,
+    ObjectHome,
+    DesktopLayoutContainer,
+    RecordLayoutInputAddress
+} = require('../pageObjects/index.js');
+const {loggers} = require("winston");
+
+const SECTIONS = {
+    ACCOUNT_INFO: 'Account Information',
+    ADDRESS_INFO: 'Address Information',
+    ADDITIONAL_INFO: 'Additional Information'
+};
+
+
+const FIELD_TYPES = {
+    DROPDOWN: new Set(['RATING', 'TYPE', 'OWNERSHIP', 'INDUSTRY', 'BILLING_COUNTRY', 'SHIPPING_COUNTRY']),
+    BASE_INPUT: new Set(['ACCOUNT_NAME', 'ACCOUNT_NUMBER', 'ACCOUNT_SITE', 'TICKER_SYMBOL', 'ANNUAL_REVENUE', 'SIC_CODE']),
+    INPUT: new Set(['PHONE', 'FAX', 'WEBSITE', 'EMPLOYEES', 'SLA_SERIAL_NUMBER', 'BILLING_CITY', 'SHIPPING_CITY', 'BILLING_ZIP/POSTAL_CODE', 'SHIPPING_ZIP/POSTAL_CODE']),
+    TEXTAREA: new Set(['BILLING_STREET', 'SHIPPING_STREET']),
+};
 
 
 const dropdownFields = new Set(['RATING', 'TYPE', 'OWNERSHIP', 'INDUSTRY', 'BILLING_COUNTRY']);
 const baseInputFields = new Set(['ACCOUNT_NAME', 'ACCOUNT_NUMBER', 'ACCOUNT_SITE', 'TICKER_SYMBOL', 'ANNUAL_REVENUE', 'SIC_CODE']);
 const inputFields = new Set(['PHONE', 'FAX', 'WEBSITE', 'EMPLOYEES', 'SLA_SERIAL_NUMBER']);
 //const textAreaFields = new Set(['BILLING_STREET', 'SHIPPING_STREET', 'DESCRIPTION']);
-const fieldData = {
-    'Rating': 'Hot',
-    'Account Name': 'UTAM Test Account',
-    'Phone': '555-1234567',
-    'Fax': '1234',
-    'Account Number': '1234',
-    'Website': 'test',
-    'Account Site': 'test',
-    'Ticker Symbol': 'test',
-    'Type': 'Other',
-    'Ownership': 'Public',
-    'Industry': 'Banking',
-    'Employees': '4',
-    'Annual Revenue' : '2345',
-    'SIC Code' : '1234567',
-    'Customer Priority': 'Low',
-    'SLA' : 'Silver',
-    'SLA Expiration Date' : '',
-    'SLA Serial Number': '123',
-    'Number of Locations' : '4',
-    'Upsell Opportunity' : 'No',
-    'Active' : 'Yes',
-    'Description': 'test'
-};
+
+
 
 const addressData = {
     'Billing Country' : 'United Kingdom'
@@ -45,36 +46,9 @@ const addressData = {
     'Shipping Zip/Postal Code' : 'ABC DEF',*/
 }
 
-const {
-    AppLauncherMenu,
-    RecordLayoutItem,
-    RecordActionWrapper,
-    ObjectHome,
-    DesktopLayoutContainer,
-    RecordLayoutInputAddress
-} = require('../pageObjects/index.js');
-import { By } from '@utam/core';
+
 
 class AccountCreation extends BasePage {
-
-    async verifyAccountsSortedRecent() {
-        await browser.waitUntil(
-            async () => {
-                try {
-                    const lv = await utam.load(ObjectHome);
-                    const lvm = await lv.getListViewManager();
-                    const cl = await lvm.getCommonListInternal();
-                    listViewHeader = await cl.getHeader();
-                    listViewName = await listViewHeader.getListViewTitleViaPicker();
-                    return listViewName && listViewName.length > 0;
-                } catch {
-                    return false;
-                }
-            },
-            { timeout: 15000, interval: 500, timeoutMsg: 'List view title did not load within 15s' }
-        );
-        expect(listViewName).toEqual('Recently Viewed');
-    }
 
     async getAppContextName() {
         const appNavAfterNav = await (await utam.load(DesktopLayoutContainer)).getAppNav();
@@ -82,124 +56,122 @@ class AccountCreation extends BasePage {
         return appName
     }
 
-    async createAccount() {
+    async createAccount(testData) {
         const actionsContainer = await listViewHeader.getAuraActionsContainer();
         await (await actionsContainer.getActionLink('New')).click();
         const modal = await utam.load(RecordActionWrapper);
         const recordForm = await modal.getRecordForm();
         const recordLayout = await recordForm.getRecordLayout();
         await recordLayout.waitForSections();
-        await this.fillAccountInformation(recordLayout, fieldData);
-        //await this.fillBillingCountry('United Kingdom');
-        await this.fillAddress(recordLayout, addressData);
-        // click modal save button and wait for modal to close
+        await this.fillAccountInformation(recordLayout, testData.accountData);
+        await this.fillAddress(recordLayout, testData.addressData);
         await recordForm.clickFooterButton('Save');
         await modal.waitForAbsence();
+        logger.info('Account created successfully');
     }
 
-    async verifyAccountCreatedSuccessMessage() {
-        const message = 'Account "gertge" was created.';
-        const regex = /Account ".+?" was created\./;
-        expect(message).toMatch(regex);
-    }
-
-    async selectRating(ratingValue) {
-        await browser.pause(1000);
-        const modal = await browser.$('[class*="slds-modal__container"]');
-        if (!modal) {
-            throw new Error('Modal not found');
-        }
-        const ratingButton = await modal.$('button[aria-label="Rating"]');
-        await ratingButton.scrollIntoView();
-        await browser.pause(500);
-        await ratingButton.click();
-        await browser.pause(1000);
-        const option = await browser.$(`[title="Warm"]`);
-        //const option = await browser.$(`lightning-base-combobox-item[data-value="${ratingValue}"]`);
-        //let spanEle = await option.$('[title="Warm"]');
-        await option.click();
-        console.log(`✓ Rating selected: ${ratingValue}`);
-        await dd.click();
-    }
-
-    async fillBillingCountry(countryVal) {
-        await browser.pause(1000);
-        const modal = await browser.$('[class*="slds-modal__container"]');
-        if (!modal) {
-            throw new Error('Modal not found');n
-        }
-        const billingCountry = await modal.$('input[aria-label="Billing Country"]');
-        await billingCountry.scrollIntoView();
-        await browser.pause(500);
-        await billingCountry.click();
-        await browser.pause(1000);
-        const option = await browser.$(`//lightning-base-combobox-item//span[@title="${countryVal}"]/../..`);
-        //const option = await browser.$(`[title="${countryVal}"]`);
-        await option.click();
-    }
-
-    async fillBillingCountry1(country) {
-        // Step 1: Get address section
-        await browser.pause(2000);
-
-        // Get element via JavaScript (pierces shadow DOM)
-        const recordLayoutElement = await browser.execute(() => {
-            return document.querySelector('records-record-layout-input-address');
-        });
-
-        if (!recordLayoutElement) {
-            throw new Error('Element not found');
-        }
-
-        // Load UTAM PO
-        const recordLayout = await utam.load(RecordLayoutInputAddress, recordLayoutElement);
-        const inputAddress = await recordLayout.getInputAddress();
-        const countryPicklist = await inputAddress.getCountryPicklist();
-        const combobox = await countryPicklist.getComboBox();
-        const baseCombobox = await combobox.getBase();
-
-        // Step 7: Select by value
-        await baseCombobox.selectItemByValue('United Kingdom');
-    }
-
-    async fillAddressInformation1(recordLayout, addressData) {
-        // Step 1: Get all sections
+    /**
+     * Find section by title
+     */
+    async getSection(recordLayout, sectionTitle) {
         const sections = await recordLayout.getSections();
-
-        // Step 2: Find 'Address Information' section
-        let addressSection = null;
         for (const section of sections) {
             const title = await section.getSectionTitle();
-            if (title === 'Address Information') {
-                addressSection = section;
+            const text = await title.getText();
+            if (text === sectionTitle) return section;
+        }
+        throw new Error(`Section "${sectionTitle}" not found`);
+    }
+
+    /**
+     * Select dropdown value - handles all combobox interactions
+     */
+    async selectDropdownValue(item, value) {
+        const dropDownField = await item.getPicklist();
+        const baseComboBoxField = await dropDownField.getBaseCombobox();
+        await baseComboBoxField.expand();
+        const items = await baseComboBoxField.getItems();
+        for (const option of items) {
+            const label = await option.getItemLabel();
+            if (label === value) {
+                await option.clickItem();
                 break;
             }
         }
+    }
 
-        if (!addressSection) {
-            throw new Error('Address Information section not found');
+
+    async fillTextField(item, value) {
+        const input = await item.getLightningInputWrapper()
+            .then(w => w.getInput())
+            .catch(() => item.getInput()); // Fallback for direct input
+
+        await input.setText(value);
+    }
+
+    /**
+     * Fill country picklist (handles shadow DOM)
+     */
+    async fillCountryPicklist(item, fieldKey, countryValue) {
+        const inputAddress = await item.getInputAddress();
+        const lightningInput = await inputAddress.getInputAddress();
+        const dropDownField = await lightningInput.getCountryPicklist();
+        const comboBoxField = await dropDownField.getComboBox();
+        const fieldName = await comboBoxField.getLabelText();
+        if(fieldName === fieldKey) {
+            const baseComboBoxField = await comboBoxField.getBase();
+            await baseComboBoxField.expand();
+            const items = await baseComboBoxField.getItems();
+            for (const item of items) {
+                const itemLabel = await item.getItemLabel();
+                //let value = fieldData[itemLabel];
+                if (itemLabel === countryValue) {
+                    await item.clickItem();
+                    break;
+                }
+            }
         }
+    }
 
-        // Step 3: Get rows in that section
-        const rows = await addressSection.getRows();
+    async fillTextArea(item, fieldKey, fieldValue) {
+        const inputAddress = await item.getInputAddress();
+        const lightningInput = await inputAddress.getInputAddress();
+        const textAreaField = await lightningInput.getStreetInput();
+        const fieldName = await textAreaField.getLabelText();
+        if(fieldName === fieldKey) {
+            await textAreaField.clearAndEnterText(fieldValue);
+        }
+    }
 
-        // Step 4: Get first row (Billing Address)
-        const firstRow = rows[0];
 
-        // Step 5: Get items in row
-        const items = await firstRow.getItems();
+    async fillInputField(item, fieldKey, fieldValue) {
+        const inputAddress = await item.getInputAddress();
+        const lightningInput = await inputAddress.getInputAddress();
+        let inputField;
+        switch (fieldKey.replaceAll(' ', '_').toUpperCase()) {
+            case 'BILLING_CITY' :
+            case 'SHIPPING_CITY' :
+                inputField = await lightningInput.getCityInput();
+                break;
+            case 'BILLING_ZIP/POSTAL_CODE' :
+            case 'SHIPPING_ZIP/POSTAL_CODE' :
+                inputField = await lightningInput.getPostalCodeInput();
+                break;
+        }
+        const fieldName = await inputField.getLabelText();
+        if(fieldName === fieldKey) {
+            await inputField.setText(fieldValue);
+        }
+    }
 
-        // Step 6: Get first item (has billing country combobox)
-        const firstItem = items[0];
-
-        // Step 7: Get InputAddress component
-        const inputAddress = await firstItem.getInputAddress();
-
-        // Step 8: Now call the actual methods
-        await inputAddress.setBillingCountry(addressData.billingCountry);
-        await inputAddress.setBillingStreet(addressData.billingStreet);
-        await inputAddress.setBillingCity(addressData.billingCity);
-        // ... other fields
+    async fillPostalCodeField(item, fieldKey, fieldValue) {
+        const inputAddress = await item.getInputAddress();
+        const lightningInput = await inputAddress.getInputAddress();
+        const inputField = await lightningInput.getPostalCodeInput();
+        const fieldName = await inputField.getLabelText();
+        if(fieldName === fieldKey) {
+            await inputField.setText(fieldValue);
+        }
     }
 
 
@@ -234,26 +206,41 @@ class AccountCreation extends BasePage {
         let inputAddress = await addressInformationItem.getInputAddress();
     }
 
-    async fillAddress(recordLayout, fieldData) {
-        const sections = await recordLayout.getSections();
-        let addressInformationSection;
-        for (const section of sections) {
-            const sectionTitle = await section.getSectionTitle();
-            const sectionText = await sectionTitle.getText();
-            if (sectionText === 'Address Information') {
-                addressInformationSection = await section;
-                break;
+    async fillAddress(recordLayout, addressData) {
+        const section = await this.getSection(recordLayout, SECTIONS.ADDRESS_INFO);
+        const rows = await section.getRows();
+        for (const row of rows) {
+            const items = await row.getItems();
+            for (const item of items) {
+                for (const [fieldKey, fieldValue] of Object.entries(addressData)) {
+                    let value;
+                    if (fieldKey != null) {
+                        value = fieldKey.replaceAll(' ', '_').toUpperCase();
+                    }
+                    if (FIELD_TYPES.DROPDOWN.has(value)) {
+                        await this.fillCountryPicklist(item, fieldKey, addressData[fieldKey]);
+                    } else if (FIELD_TYPES.TEXTAREA.has(value)){
+                        await this.fillTextArea(item, fieldKey, addressData[fieldKey]);
+                    } else if (FIELD_TYPES.INPUT.has(value)){
+                        await this.fillInputField(item, fieldKey, addressData[fieldKey]);
+                    }
+                }
             }
         }
-        const rows = await addressInformationSection.getRows();
+    }
+
+
+    async fillAddress_working(recordLayout, fieldData) {
+        const section = await this.getSection(recordLayout, SECTIONS.ADDRESS_INFO);
+        const rows = await section.getRows();
         for (const row of rows) {
             const items = await row.getItems();
             for (const item of items) {
                 const inputAddress = await item.getInputAddress();
-                    const lightningInput = await inputAddress.getInputAddress();
-                        const dropDownField = await lightningInput.getCountryPicklist();
-                        const comboBoxField = await dropDownField.getComboBox();
-                        const fieldName = await comboBoxField.getLabelText();
+                const lightningInput = await inputAddress.getInputAddress();
+                const dropDownField = await lightningInput.getCountryPicklist();
+                const comboBoxField = await dropDownField.getComboBox();
+                const fieldName = await comboBoxField.getLabelText();
                         if(fieldName === 'Billing Country') {
                             const baseComboBoxField = await comboBoxField.getBase();
                             await baseComboBoxField.expand();
@@ -272,8 +259,8 @@ class AccountCreation extends BasePage {
     }
 
 
-    async fillAccountInformation(recordLayout, fieldData) {
-        const sections = await recordLayout.getSections();
+    async fillAccountInformation(recordLayout, testData) {
+        /*const sections = await recordLayout.getSections();
         let accountInformationSection;
         for (const section of sections) {
             const sectionTitle = await section.getSectionTitle();
@@ -282,48 +269,35 @@ class AccountCreation extends BasePage {
                 accountInformationSection = await section;
                 break;
             }
-        }
-        const rows = await accountInformationSection.getRows();
+        }*/
+        const section = await this.getSection(recordLayout, SECTIONS.ACCOUNT_INFO);
+        const rows = await section.getRows();
         for (const row of rows) {
             const items = await row.getItems();
             for (const item of items) {
                 const label = await item.getLabelText();
-                let fieldName;
+                let fieldKey;
                 if (label != null) {
-                    fieldName = label.replaceAll(' ', '_').toUpperCase();
+                    fieldKey = label.replaceAll(' ', '_').toUpperCase();
                 }
-                let value = fieldData[label];
+                let value = testData[label];
                 if (!value)
                     continue;
-                if (dropdownFields.has(fieldName)) {
-                    await this.chooseDropdown(item, value);
-                } else if (baseInputFields.has(fieldName)) {
+                if (FIELD_TYPES.DROPDOWN.has(fieldKey)) {
+                    await this.selectDropdownValue(item, value);
+                } else if (FIELD_TYPES.BASE_INPUT.has(fieldKey) || FIELD_TYPES.INPUT.has(fieldKey)) {
                     if(label === 'Account Name') {
                         value = `${value}_${Date.now()}`;
+                        scenarioContext.setContext('Account Name', value);
                         logger.info(`Creating account with name...${value}`);
                     }
-                    await this.enterBaseInputField(item, value);
-                } else if (inputFields.has(fieldName)) {
-                    await this.enterInputField(item, value);
+                    await this.fillTextField(item, value);
                 }
             }
         }
     }
 
-    async chooseDropdown(item, value) {
-        console.log(await item);
-        const dropDownField = await item.getPicklist();
-        const baseComboBoxField = await dropDownField.getBaseCombobox();
-        await baseComboBoxField.expand();
-        const items = await baseComboBoxField.getItems();
-        for (const item of items) {
-            const itemLabel = await item.getItemLabel();
-            if (itemLabel === value) {
-                await item.clickItem();
-                break;
-            }
-        }
-    }
+
 
     async enterBaseInputField(item, value) {
         const baseInput = await item.getLightningInputWrapper();
@@ -340,5 +314,141 @@ class AccountCreation extends BasePage {
         const lightningInput = await item.getInput();
         await lightningInput.setText(value);
     }
+
+    async verifyAccountsSortedRecent() {
+        await browser.waitUntil(
+            async () => {
+                try {
+                    const lv = await utam.load(ObjectHome);
+                    const lvm = await lv.getListViewManager();
+                    const cl = await lvm.getCommonListInternal();
+                    listViewHeader = await cl.getHeader();
+                    listViewName = await listViewHeader.getListViewTitleViaPicker();
+                    return listViewName && listViewName.length > 0;
+                } catch {
+                    return false;
+                }
+            },
+            { timeout: 15000, interval: 500, timeoutMsg: 'List view title did not load within 15s' }
+        );
+        expect(listViewName).toEqual('Recently Viewed');
+    }
+
+
+
+    async verifyAccountCreatedSuccessMessage() {
+        const message = 'Account "gertge" was created.';
+        const regex = /Account ".+?" was created\./;
+        expect(message).toMatch(regex);
+    }
+
+    async selectRating(ratingValue) {
+        await browser.pause(1000);
+        const modal = await browser.$('[class*="slds-modal__container"]');
+        if (!modal) {
+            throw new Error('Modal not found');
+        }
+        const ratingButton = await modal.$('button[aria-label="Rating"]');
+        await ratingButton.scrollIntoView();
+        await browser.pause(500);
+        await ratingButton.click();
+        await browser.pause(1000);
+        const option = await browser.$(`[title="Warm"]`);
+        await option.click();
+        console.log(`✓ Rating selected: ${ratingValue}`);
+    }
+
+    async fillBillingCountry(countryVal) {
+        await browser.pause(1000);
+        const modal = await browser.$('[class*="slds-modal__container"]');
+        if (!modal) {
+            throw new Error('Modal not found');n
+        }
+        const billingCountry = await modal.$('input[aria-label="Billing Country"]');
+        await billingCountry.scrollIntoView();
+        await browser.pause(500);
+        await billingCountry.click();
+        await browser.pause(1000);
+        const option = await browser.$(`//lightning-base-combobox-item//span[@title="${countryVal}"]/../..`);
+        await option.click();
+    }
+
+    async fillBillingCountry1(country) {
+        await browser.pause(2000);
+        const recordLayoutElement = await browser.execute(() => {
+            return document.querySelector('records-record-layout-input-address');
+        });
+
+        if (!recordLayoutElement) {
+            throw new Error('Element not found');
+        }
+        const recordLayout = await utam.load(RecordLayoutInputAddress, recordLayoutElement);
+        const inputAddress = await recordLayout.getInputAddress();
+        const countryPicklist = await inputAddress.getCountryPicklist();
+        const combobox = await countryPicklist.getComboBox();
+        const baseCombobox = await combobox.getBase();
+        await baseCombobox.selectItemByValue('United Kingdom');
+    }
+
+    async fillAddressInformation1(recordLayout, addressData) {
+        const sections = await recordLayout.getSections();
+        let addressSection = null;
+        for (const section of sections) {
+            const title = await section.getSectionTitle();
+            if (title === 'Address Information') {
+                addressSection = section;
+                break;
+            }
+        }
+        if (!addressSection) {
+            throw new Error('Address Information section not found');
+        }
+        const rows = await addressSection.getRows();
+        const firstRow = rows[0];
+        const items = await firstRow.getItems();
+        const firstItem = items[0];
+        const inputAddress = await firstItem.getInputAddress();
+        await inputAddress.setBillingCountry(addressData.billingCountry);
+        await inputAddress.setBillingStreet(addressData.billingStreet);
+        await inputAddress.setBillingCity(addressData.billingCity);
+    }
+
+    async searchForAccount() {
+        await browser.pause(4000);
+        await this.chooseAppNavBar('Accounts');
+        const accountName = scenarioContext.getContext('Account Name');
+        const pageObject = await utam.load(ObjectHome);
+        const listViewMgr = await pageObject.getListViewManager();
+        const commonList = await listViewMgr.getCommonListInternal();
+        const header = await commonList.getHeader();
+        const searchBar = await header.getSearchBar();
+        const searchBarInput = await searchBar.getInput();
+        await searchBarInput.setText(accountName);
+        await searchBarInput.focus();
+        await browser.pause(4000);
+    }
+
+    async verifyAccountDisplay() {
+        let expectedAccountName = scenarioContext.getContext('Account Name')
+        const pageObject = await utam.load(ObjectHome);
+        const listViewMgr = await pageObject.getListViewManager();
+        const commonList = await listViewMgr.getCommonListInternal();
+        const displayManager = await commonList.getDisplayManager();
+        const primaryDisplay = await displayManager.getDisplay();
+        const  grid = await primaryDisplay.getDisplayGrid();
+        const dataTable = await grid.getDatatable();
+        //const actualAccountNameEle = await dataTable.getRow(1);
+        //const actualAccountName = await actualAccountNameEle.getText();
+        const rows = await dataTable.getRows();
+        expect(rows.length).toEqual(1);
+    }
+
+    async verifyAccountCreatedSuccessMessage() {
+        const message = 'Account "gertge" was created.';
+        const regex = /Account ".+?" was created\./;
+        expect(message).toMatch(regex);
+    }
+
+
 }
 module.exports = new AccountCreation();
