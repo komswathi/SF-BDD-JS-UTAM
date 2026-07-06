@@ -1,5 +1,6 @@
 require('dotenv').config();
 const os = require('os');
+const path = require('path');
 
 const { UtamWdioService } = require('wdio-utam-service');
 const AllureReporter = require('@wdio/allure-reporter');
@@ -9,7 +10,7 @@ const TIMEOUT = DEBUG ? 60 * 1000 * 30 : 60 * 1000;
 
 exports.config = {
   runner: 'local',
-  specs: ['tests/**/*.spec.js'],
+  specs: ['./features/**/*.feature'],
   maxInstances: 1,
   capabilities: [
     {
@@ -58,7 +59,7 @@ exports.config = {
     AllureReporter.addAttachment(`screenshot_${Date.now()}`, buffer, 'image/png');
   },
 
-  framework: 'jasmine',
+  framework: 'cucumber',
   reporters: [
     'spec',
     [
@@ -74,10 +75,26 @@ exports.config = {
           os_version: os.version()
         }
       }
-    ]
+    ],
+    ['cucumberjs-json', {
+      jsonFolder: 'report/',
+      language: 'en'
+    }]
   ],
-  jasmineOpts: {
-    // max execution time for a script, set to 5 min
-    defaultTimeoutInterval: 1000 * 60 * 5
+
+  cucumberOpts: {
+    require: ['./step-definitions/account-creation.steps.js'],
+    backtrace: false,
+    requireModule: [],
+    dryRun: false,
+    failFast: false,
+    format: ['pretty'],
+    snippets: true,
+    source: true,
+    profile: [],
+    strict: false,
+    tagExpression: '',
+    timeout: 120000,
+    ignoreUndefinedDefinitions: false
   }
 };
