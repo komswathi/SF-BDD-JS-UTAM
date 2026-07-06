@@ -1,8 +1,10 @@
 require('dotenv').config();
 const os = require('os');
+const fs = require('fs');
 const path = require('path');
 const reportObj = require('./reporterUtils/generateHTMLReport.js');
 const { removeSync } = require('fs-extra');
+const cucumberJson = require('wdio-cucumberjs-json-reporter').default;
 
 const { UtamWdioService } = require('wdio-utam-service');
 const AllureReporter = require('@wdio/allure-reporter');
@@ -48,23 +50,39 @@ exports.config = {
   ],
 
   onPrepare: async function (config, capabilities) {
-    await removeSync('./report');
+    removeSync('./report');
   },
 
   before: async function () {
     await browser.setWindowSize(1920, 1080);
   },
 
-  /* afterTest: async function (test, context, { error, duration, passed }) {
-      let screenshot = await browser.takeScreenshot();
-      await browser.allure.addAttachment('screenshot', Buffer.from(screenshot, 'base64'), 'image/png');
-  },*/
-
   afterTest: async function (test, context, { error, duration, passed }) {
-    let screenshot = browser.takeScreenshot();
+    let screenshot = await browser.takeScreenshot();
     const buffer = Buffer.from(screenshot, 'base64');
     AllureReporter.addAttachment(`screenshot_${Date.now()}`, buffer, 'image/png');
   },
+
+  afterStep: async function (step, scenario, result, context) {
+    if (!result.passed) {
+      try {
+        const screenshot = await browser.takeScreenshot();
+        await cucumberJson.attach(screenshot, 'image/png');
+      } catch (e) {
+        console.log('Screenshot attach failed in afterStep:', e.message);
+      }
+    }
+  },
+
+  afterScenario: async function (world, result, context) {
+    try {
+      const screenshot = await browser.takeScreenshot();
+      cucumberJson.attach(screenshot, 'image/png');
+    } catch (e) {
+      console.log('Screenshot attach failed in afterScenario:', e.message);
+    }
+  },
+
 
   onComplete: async (exitCode, config, capabilities, results) => {
     reportObj.generateHTMLReport();

@@ -67,7 +67,7 @@
     "typescript": "~6.0.2",
     "utam": "^3.3.0",
     "wdio-chromedriver-service": "^7.3.0",
-    "wdio-cucumberjs-json-reporter": "^4.3.0",
+    "wdio-cucumberjs-json-reporter": "^3.0.0",
     "wdio-utam-service": "^3.3.0",
     "winston": "^3.19.0",
     "fs-extra" : "^11.3.6"
