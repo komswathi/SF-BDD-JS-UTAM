@@ -13,7 +13,6 @@ deploy-options.json
 
 # LWC Jest coverage and test reports
 coverage/
-tests/
 report/
 allure-report/
 allure-results/
