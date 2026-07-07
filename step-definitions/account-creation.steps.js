@@ -51,7 +51,6 @@ When('I create account with following details', async (dataTable) => {
 
   scenarioContext.setContext('testData', testData);
   scenarioContext.setContext('accountName', testData.accountData['Account Name']);
-
   await accountPage.createAccount(testData);
 });
 
