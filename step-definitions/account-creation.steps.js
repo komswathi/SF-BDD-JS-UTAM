@@ -8,6 +8,7 @@ const scenarioContext = require('../context/scenario_context');
 
 Given('I am logged into Salesforce', async () => {
   await loginPage.logInSalesforce();
+  //await loginPage.logInSalesforceViaAPI();
   scenarioContext.getScenarioContext().clear();
 });
 

@@ -48,6 +48,7 @@
     "@wdio/local-runner": "^7.30.0",
     "@wdio/spec-reporter": "^7.30.0",
     "allure-js-commons": "^3.10.0",
+    "axios": "^1.6.0",
     "chromedriver": "^149.0.0",
     "cross-env": "^5.1.6",
     "dotenv": "^17.4.2",
@@ -70,7 +71,8 @@
     "wdio-cucumberjs-json-reporter": "^3.0.0",
     "wdio-utam-service": "^3.3.0",
     "winston": "^3.19.0",
-    "fs-extra" : "^11.3.6"
+    "fs-extra" : "^11.3.6",
+    "speakeasy" : "^2.0.0"
   },
   "lint-staged": {
     "**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}": [

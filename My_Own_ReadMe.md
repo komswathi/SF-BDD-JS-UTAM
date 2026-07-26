@@ -1,6 +1,8 @@
 **UTAM Jasmine**
 npm install
 
+npm install --legacy-peer-deps
+
 sf org login web --set-default
 
 npm run test:ui:compile
