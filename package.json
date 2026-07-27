@@ -27,7 +27,8 @@
     "prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\" --check",
     "prettier:verify": "prettier --list-different \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
     "precommit": "lint-staged",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:docker": "docker-compose up --build --abort-on-container-exit"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.6",
@@ -72,7 +73,8 @@
     "wdio-utam-service": "^3.3.0",
     "winston": "^3.19.0",
     "fs-extra" : "^11.3.6",
-    "speakeasy" : "^2.0.0"
+    "speakeasy" : "^2.0.0",
+    "wdio-docker-service": "^3.2.1"
   },
   "lint-staged": {
     "**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}": [

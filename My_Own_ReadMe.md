@@ -28,3 +28,24 @@ npm run test:ui:generate:login
 npm run test:local
 
 
+Docker
+brew install docker-compose
+
+docker-compose build
+
+docker-compose up
+
+
+docker images
+docker images | grep wdio
+docker rmi image-name
+
+All containers (including stopped):
+docker ps
+docker ps -a
+docker rm container-id
+
+docker-compose down --remove-orphans
+
+docker-compose up --build
+

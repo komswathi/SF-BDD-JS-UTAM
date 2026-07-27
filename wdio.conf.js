@@ -5,6 +5,7 @@ const path = require('path');
 const reportObj = require('./reporterUtils/generateHTMLReport.js');
 const { removeSync } = require('fs-extra');
 const cucumberJson = require('wdio-cucumberjs-json-reporter').default;
+const isDocker = process.env.DOCKER_ENV === 'true';
 
 const { UtamWdioService } = require('wdio-utam-service');
 const AllureReporter = require('@wdio/allure-reporter');
@@ -16,21 +17,20 @@ exports.config = {
   runner: 'local',
   specs: ['./features/**/*.feature'],
   maxInstances: 1,
-  capabilities: [
-    {
-      maxInstances: 1,
-      browserName: 'chrome',
-      'goog:chromeOptions': {
-        // to run chrome headless the following flags are required
-        // (see https://developers.google.com/web/updates/2017/04/headless-chrome)
-        // to deactivate the headless mode for local development and testing, please comment out the following line
-        //args: ['--headless=new', '--window-size=1920,1080']
-
-        //args: ['--headless=new', '--window-size=1920,1080']
-        args: ['--window-size=1920,1080']
-      }
+  capabilities: [{
+    maxInstances: 1,
+    browserName: 'chrome',
+    acceptInsecureCerts: true,
+    'goog:chromeOptions': {
+      args: [
+        '--no-sandbox',
+        '--disable-infobars',
+        '--headless',
+        '--disable-gpu',
+        '--window-size=1440,735'
+      ],
     }
-  ],
+  }],
   logLevel: 'debug',
   bail: 0,
   // timeout for all waitFor commands
@@ -50,7 +50,12 @@ exports.config = {
   ],
 
   onPrepare: async function (config, capabilities) {
-    removeSync('./report');
+    try {
+      removeSync('./report');
+      removeSync('./allure-results');
+    } catch (e) {
+      console.warn('Report cleanup warning:', e.message);
+    }
   },
 
   before: async function () {
