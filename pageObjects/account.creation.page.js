@@ -425,7 +425,7 @@ class AccountCreation extends BasePage {
         const searchBarInput = await searchBar.getInput();
         await searchBarInput.setText(accountName);
         await searchBarInput.focus();
-        await browser.pause(4000);
+        await browser.pause(7000);
     }
 
     async verifyAccountDisplay() {

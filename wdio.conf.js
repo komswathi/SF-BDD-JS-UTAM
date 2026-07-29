@@ -58,22 +58,6 @@ exports.config = {
     await browser.setWindowSize(1920, 1080);
   },
 
-  afterTest: async function (test, context, { error, duration, passed }) {
-    let screenshot = await browser.takeScreenshot();
-    const buffer = Buffer.from(screenshot, 'base64');
-    AllureReporter.addAttachment(`screenshot_${Date.now()}`, buffer, 'image/png');
-  },
-
-  afterStep: async function (step, scenario, result, context) {
-    if (!result.passed) {
-
-    }
-  },
-
-  afterScenario: async function (world, result, context) {
-
-  },
-
 
   onComplete: async (exitCode, config, capabilities, results) => {
   },
@@ -87,7 +71,7 @@ exports.config = {
       {
         outputDir: 'allure-results',
         disableWebdriverStepsReporting: false,
-        disableWebdriverScreenshotsReporting: true,
+        disableWebdriverScreenshotsReporting: false,
         addConsoleLogs: true,
         reportedEnvironmentVars: {
           os_platform: os.platform(),
