@@ -26,3 +26,8 @@ npm run test:ui:generate:login
 npm run test:local
 
 
+
+pkill -f chromedriver
+pkill -f "Google Chrome"
+pkill -f Chromium
+sleep 
