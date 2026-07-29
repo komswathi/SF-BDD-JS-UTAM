@@ -1,8 +1,3 @@
-//import { ChainablePromiseElement } from 'webdriverio';
-/*import dotenv from 'dotenv';
-dotenv.config();*/
-//import * as Constants from "../utils/userDetails.js";
-
 let baseUrl = process.env.BASE_URL;
 let Page = require('./page.js');
 const BasePage = require('./base.page.js');
@@ -18,11 +13,11 @@ const {
 } = require('../pageObjects/index.js');
 
 class LoginPage extends BasePage {
-    get emailInput() { return $("input[type='email']")}
-    get passwordInput () {return $("input[type='password']");}
-    get submitButton () {return $("input[type='submit']");}
-    get otpInput () {return $("input[id='tc']");}
-    get saveButton () {return $(("input[id='save']"));}
+    get emailInput() { return ("input[type='email']")}
+    get passwordInput () {return ("input[type='password']");}
+    get submitButton () {return ("input[type='submit']");}
+    get otpInput () {return ("input[id='tc']");}
+    get saveButton () {return (("input[id='save']"));}
 
     async logInSalesforce_copy() {
         // Check environment variables

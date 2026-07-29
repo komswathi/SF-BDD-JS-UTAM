@@ -8,12 +8,12 @@ import {error} from "@salesforce/sfdx-lwc-jest/src/log";
 let baseUrl = process.env.BASE_URL;
 let Page = require('./page.js');
 const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours by default
-import {
+const {
     AppLauncherMenu,
     RecordActionWrapper,
     ObjectHome,
     DesktopLayoutContainer
-} from '../pageObjects/index.js';
+} = require('../pageObjects/index.js');
 class BasePage extends Page {
     async chooseAppNavBar(tabName) {
         const container = await utam.load(DesktopLayoutContainer);

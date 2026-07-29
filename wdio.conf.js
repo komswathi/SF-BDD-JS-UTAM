@@ -2,9 +2,7 @@ require('dotenv').config();
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
-const reportObj = require('./reporterUtils/generateHTMLReport.js');
 const { removeSync } = require('fs-extra');
-const cucumberJson = require('wdio-cucumberjs-json-reporter').default;
 const isDocker = process.env.DOCKER_ENV === 'true';
 
 const { UtamWdioService } = require('wdio-utam-service');
@@ -25,7 +23,6 @@ exports.config = {
       args: [
         '--no-sandbox',
         '--disable-infobars',
-        '--headless',
         '--disable-gpu',
         '--window-size=1440,735'
       ],
@@ -39,7 +36,6 @@ exports.config = {
   connectionRetryCount: 3,
   automationProtocol: 'webdriver',
   services: [
-    'chromedriver',
     [
       UtamWdioService,
       {
@@ -70,27 +66,16 @@ exports.config = {
 
   afterStep: async function (step, scenario, result, context) {
     if (!result.passed) {
-      try {
-        const screenshot = await browser.takeScreenshot();
-        await cucumberJson.attach(screenshot, 'image/png');
-      } catch (e) {
-        console.log('Screenshot attach failed in afterStep:', e.message);
-      }
+
     }
   },
 
   afterScenario: async function (world, result, context) {
-    try {
-      const screenshot = await browser.takeScreenshot();
-      cucumberJson.attach(screenshot, 'image/png');
-    } catch (e) {
-      console.log('Screenshot attach failed in afterScenario:', e.message);
-    }
+
   },
 
 
   onComplete: async (exitCode, config, capabilities, results) => {
-    reportObj.generateHTMLReport();
   },
 
 
@@ -110,11 +95,7 @@ exports.config = {
           os_version: os.version()
         }
       }
-    ],
-    ['cucumberjs-json', {
-      jsonFolder: 'report/',
-      language: 'en'
-    }]
+    ]
   ],
 
   cucumberOpts: {
