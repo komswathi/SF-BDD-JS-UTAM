@@ -1,0 +1,39 @@
+services:
+  chrome:
+    image: browserless/chrome:latest
+    container_name: chrome-browser
+    ports:
+      - "3000:3000"
+    environment:
+      - DEBUG=false
+      - DISABLE_AUTO_SET_DOWNLOAD_PATH=true
+    networks:
+      - bdd-network
+
+  wdio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sf-bdd-tests
+    depends_on:
+      - chrome
+    environment:
+      - DOCKER_ENV=true
+      - CI=true
+      - SF_ORG_URL=${SF_ORG_URL}
+      - SF_USERNAME=${SF_USERNAME}
+      - SF_PASSWORD=${SF_PASSWORD}
+      - SF_TOTP_SECRET=${SF_TOTP_SECRET}
+      - WEBDRIVER_HOST=chrome
+      - WEBDRIVER_PORT=3000
+      - WEBDRIVER_PATH=/devtools/browser
+    volumes:
+      - ./report:/app/report
+      - ./allure-results:/app/allure-results
+      - ./.env:/app/.env:ro
+    networks:
+      - bdd-network
+
+networks:
+  bdd-network:
+    driver: bridge
