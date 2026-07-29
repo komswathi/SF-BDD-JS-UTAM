@@ -42,7 +42,6 @@
     "@salesforce/eslint-config-lwc": "^4.1.2",
     "@salesforce/eslint-plugin-lightning": "^2.0.0",
     "@salesforce/sfdx-lwc-jest": "^7.1.2",
-    "@cucumber/cucumber": "^7.3.0",
     "@wdio/allure-reporter": "^7.30.0",
     "@wdio/cli": "^7.30.0",
     "@wdio/cucumber-framework": "^7.30.0",

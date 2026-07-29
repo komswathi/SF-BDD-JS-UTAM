@@ -9,8 +9,10 @@ const isDocker = process.env.DOCKER_ENV === 'true';
 
 const { UtamWdioService } = require('wdio-utam-service');
 const AllureReporter = require('@wdio/allure-reporter');
+
 // use prefix 'DEBUG=true' to run test in debug mode
 const { DEBUG } = process.env;
+const HEADLESS = process.env.HEADLESS !== 'false'; // default true
 const TIMEOUT = DEBUG ? 60 * 1000 * 30 : 60 * 1000;
 
 exports.config = {
@@ -24,10 +26,10 @@ exports.config = {
     'goog:chromeOptions': {
       args: [
         '--no-sandbox',
+        ...(HEADLESS ? ['--headless=new'] : []),
         '--disable-infobars',
-        '--headless',
         '--disable-gpu',
-        '--window-size=1440,735'
+        '--window-size=1920,1080'
       ],
     }
   }],
