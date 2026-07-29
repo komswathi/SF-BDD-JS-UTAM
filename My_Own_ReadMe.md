@@ -49,3 +49,5 @@ docker-compose down --remove-orphans
 
 docker-compose up --build
 
+
+pkill -f chromedriver; pkill -f "Google Chrome"; sleep 2
