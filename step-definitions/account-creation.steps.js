@@ -1,7 +1,5 @@
 const { Given, When, Then } = require('@cucumber/cucumber');
 
-const stepDefinitionPath = __filename;
-
 const loginPage = require('../pageobjects/login.page');
 const accountPage = require('../pageobjects/account.creation.page');
 const scenarioContext = require('../context/scenario_context');

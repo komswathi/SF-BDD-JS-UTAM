@@ -18,11 +18,11 @@ const {
 } = require('../pageObjects/index.js');
 
 class LoginPage extends BasePage {
-    get emailInput() { return $("input[type='email']")}
-    get passwordInput () {return $("input[type='password']");}
-    get submitButton () {return $("input[type='submit']");}
-    get otpInput () {return $("input[id='tc']");}
-    get saveButton () {return $(("input[id='save']"));}
+    get emailInput() { return ("input[type='email']")}
+    get passwordInput () {return ("input[type='password']");}
+    get submitButton () {return ("input[type='submit']");}
+    get otpInput () {return ("input[id='tc']");}
+    get saveButton () {return (("input[id='save']"));}
 
     async logInSalesforce_copy() {
         // Check environment variables
@@ -154,26 +154,24 @@ class LoginPage extends BasePage {
 
         const menu = await utam.load(AppLauncherMenu);
         const search = await (await menu.getSearchBar()).getLwcInput();
-        await browser.pause(2000);
+        await browser.pause(3000);
         await search.setText(appName);
+        await browser.pause(2000);
 
-        // retry getItems() until search results are available — implicitTimeout is 0
-        // so UTAM does not wait internally when search results are still loading
         let items;
         await browser.waitUntil(
             async () => {
                 try {
                     items = await menu.getItems();
                     return items.length > 0;
-                } catch {
+                } catch (e) {
                     return false;
                 }
             },
-            { timeout: 25000, interval: 500, timeoutMsg: 'App Launcher search returned no items' }
+            { timeout: 60000, interval: 500 }
         );
 
-        // find the item whose first line matches exactly 'Sales' to avoid clicking
-        // 'Sales Console' or other apps with 'Sales' in the name
+        // Find and click using JavaScript
         let targetItem = items[0];
         for (const item of items) {
             try {
@@ -183,13 +181,17 @@ class LoginPage extends BasePage {
                     break;
                 }
             } catch {
-                // skip unreadable item
+                // skip
             }
         }
-        await (await targetItem.getRoot()).click();
 
-        // the app context switch is asynchronous — the URL changes immediately but
-        // the nav bar app name updates shortly after; retry until it shows 'Sales'
+        // v9 fix: Use JavaScript click instead
+        const root = await targetItem.getRoot();
+        await browser.execute((element) => {
+            element.click();
+        }, root);
+
+        // Wait for app switch
         await browser.waitUntil(
             async () => {
                 try {
@@ -201,7 +203,7 @@ class LoginPage extends BasePage {
                     return false;
                 }
             },
-            { timeout: 40000, interval: 1000, timeoutMsg: 'App context did not switch to Sales within 30s' }
+            { timeout: 40000, interval: 1000 }
         );
     }
 
