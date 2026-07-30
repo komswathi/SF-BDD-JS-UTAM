@@ -6,14 +6,14 @@ dotenv.config();*/
 import {error} from "@salesforce/sfdx-lwc-jest/src/log";
 
 let baseUrl = process.env.BASE_URL;
-let Page = require('./page.js');
+let Page = require('./page.mjs');
 const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours by default
 const {
     AppLauncherMenu,
     RecordActionWrapper,
     ObjectHome,
     DesktopLayoutContainer
-} = require('../pageObjects/index.js');
+} = require('./index.mjs');
 class BasePage extends Page {
     async chooseAppNavBar(tabName) {
         const container = await utam.load(DesktopLayoutContainer);
@@ -29,4 +29,4 @@ class BasePage extends Page {
         return appName
     }
 }
-module.exports = BasePage;
+export default BasePage;

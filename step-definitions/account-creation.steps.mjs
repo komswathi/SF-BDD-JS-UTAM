@@ -1,11 +1,10 @@
-const { Given, When, Then } = require('@cucumber/cucumber');
-
-const loginPage = require('../pageobjects/login.page');
-const accountPage = require('../pageobjects/account.creation.page');
-const scenarioContext = require('../context/scenario_context');
+import { Given, When, Then } from '@cucumber/cucumber';
+import loginPage from '../pageObjects/login.page.mjs';
+import accountPage from '../pageObjects/account.creation.page.mjs';
+import scenarioContext from '../context/scenario_context.mjs';
 
 Given('I am logged into Salesforce', async () => {
-  await loginPage.logInSalesforce();
+  await loginPage.logInSalesforceWithMFA();
   //await loginPage.logInSalesforceViaAPI();
   scenarioContext.getScenarioContext().clear();
 });

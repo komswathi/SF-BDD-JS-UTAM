@@ -1,16 +1,15 @@
-let baseUrl = process.env.BASE_URL;
-let Page = require('./page.js');
-const BasePage = require('./base.page.js');
-const axios = require('axios');
-const speakeasy = require('speakeasy');
-
-const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours by default
-const {
+import BasePage from './base.page.mjs';
+import axios from 'axios';
+import speakeasy from 'speakeasy';
+import { generate, createGuardrails } from 'otplib';
+import {
     AppLauncherMenu,
     RecordActionWrapper,
     ObjectHome,
     DesktopLayoutContainer
-} = require('../pageObjects/index.js');
+} from './index.mjs';
+
+const SESSION_TIMEOUT = 2 * 60 * 60 * 100;
 
 class LoginPage extends BasePage {
     get emailInput() { return ("input[type='email']")}
@@ -82,6 +81,38 @@ class LoginPage extends BasePage {
         return domDocument;
     }
 
+
+    async logInSalesforceWithMFA() {
+        const { SF_ORG_URL, SF_USERNAME, SF_PASSWORD, SF_TOTP_SECRET } = process.env;
+
+        if (!SF_ORG_URL || !SF_USERNAME || !SF_PASSWORD || !SF_TOTP_SECRET) {
+            throw new Error(`Missing required credentials in environment`);
+        }
+
+        const domDocument = utam.getCurrentDocument();
+
+        browser.navigateTo(SF_ORG_URL);
+
+
+        // Generate TOTP with otplib
+        const token = await generate({
+            secret: atob(SF_TOTP_SECRET),
+            guardrails: createGuardrails({ MIN_SECRET_BYTES: 10 }),
+        });
+
+        await Promise.all([
+            this.fillInput(this.emailInput, atob(SF_USERNAME)),
+            this.fillInput(this.passwordInput, atob(SF_PASSWORD))
+        ]);
+
+        await this.clickElement(this.submitButton);
+
+        // Enter OTP and save
+        await this.fillInput(this.otpInput, token);
+        await this.clickElement(this.saveButton);
+
+        return domDocument;
+    }
 
     async fillInput(selector, value) {
         const element = await browser.$(selector);
@@ -216,4 +247,5 @@ class LoginPage extends BasePage {
         return appName
     }
 }
-module.exports = new LoginPage();
+
+export default new LoginPage()

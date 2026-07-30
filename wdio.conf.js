@@ -1,16 +1,26 @@
-require('dotenv').config();
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
-const { removeSync } = require('fs-extra');
+import dotenv from 'dotenv';
+import os from 'os';
+import fs from 'fs';
+import path from 'path';
+import { removeSync } from 'fs-extra';
+import { UtamWdioService } from 'wdio-utam-service';
+
+dotenv.config();
+
 const isDocker = process.env.DOCKER_ENV === 'true';
-const { UtamWdioService } = require('wdio-utam-service');
-const AllureReporter = require('@wdio/allure-reporter');
-// use prefix 'DEBUG=true' to run test in debug modeconst reportObj = require('./reporterUtils/generateHTMLReport.js');
 const { DEBUG } = process.env;
 const TIMEOUT = DEBUG ? 60 * 1000 * 30 : 30 * 1000;
 
-exports.config = {
+const screenshotDir = './screenshots';
+const jsonReportDir = './report/json';
+
+[screenshotDir, jsonReportDir].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
+
+export const config = {
   runner: 'local',
   specs: ['./features/**/*.feature'],
   maxInstances: 1,
@@ -29,7 +39,6 @@ exports.config = {
   }],
   logLevel: 'debug',
   bail: 0,
-  // timeout for all waitFor commands
   waitforTimeout: TIMEOUT,
   connectionRetryTimeout: 120000,
   connectionRetryCount: 3,
@@ -61,7 +70,7 @@ exports.config = {
   afterStep: async function (step, scenario, result, context) {
     if (!result.passed) {
       try {
-        const cucumberJson = require('wdio-cucumberjs-json-reporter').default;
+        const cucumberJson = (await import('wdio-cucumberjs-json-reporter')).default;
         const screenshot = await browser.takeScreenshot();
         await cucumberJson.attach(screenshot, 'image/png');
       } catch (e) {
@@ -72,7 +81,7 @@ exports.config = {
 
   afterScenario: async function (world, result, context) {
     try {
-      const cucumberJson = require('wdio-cucumberjs-json-reporter').default;
+      const cucumberJson = (await import('wdio-cucumberjs-json-reporter')).default;
       const screenshot = await browser.takeScreenshot();
       cucumberJson.attach(screenshot, 'image/png');
     } catch (e) {
@@ -81,10 +90,13 @@ exports.config = {
   },
 
   onComplete: async (exitCode, config, capabilities, results) => {
-    const reportObj = require('./reporterUtils/generateHTMLReport.js');
-    reportObj.generateHTMLReport();
+    try {
+      const reporterUtils = await import('./reporterUtils/generateHTMLReport.mjs');
+      reporterUtils.generateHTMLReport();
+    } catch (e) {
+      console.log('Report generation warning:', e.message);
+    }
   },
-
 
   framework: 'cucumber',
   reporters: [
@@ -106,7 +118,7 @@ exports.config = {
   ],
 
   cucumberOpts: {
-    require: ['./step-definitions/**/*.js'],
+    require: ['./step-definitions/**/*.mjs'],
     format: [
       'pretty',
       'json:./report/cucumber_report.json'

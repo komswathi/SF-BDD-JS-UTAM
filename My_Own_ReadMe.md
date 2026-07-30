@@ -49,3 +49,9 @@ docker-compose down --remove-orphans
 
 docker-compose up --build
 
+nvm install 22
+nvm use 20
+rm -rf node_modules package-lock.json
+npm install
+npm run test-local
+

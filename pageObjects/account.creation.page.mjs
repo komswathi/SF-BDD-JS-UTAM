@@ -1,17 +1,16 @@
-const logger = require('../utils/logger');
-let BasePage = require('./base.page.js');
-const scenarioContext = require('../context/scenario_context');
-
-let listViewHeader;
-let listViewName;
-
-const {
+import logger from '../utils/logger.mjs';
+import Page from './page.mjs';
+import scenarioContext from '../context/scenario_context.mjs';
+import {
+    AppLauncherMenu,
     RecordActionWrapper,
     ObjectHome,
     DesktopLayoutContainer,
     RecordLayoutInputAddress
-} = require('../pageObjects/index.js');
-const {loggers} = require("winston");
+} from './index.mjs';
+
+let listViewHeader;
+let listViewName;
 
 const SECTIONS = {
     ACCOUNT_INFO: 'Account Information',
@@ -462,4 +461,5 @@ class AccountCreation extends BasePage {
 
 
 }
-module.exports = new AccountCreation();
+
+export default new AccountCreation()
