@@ -73,7 +73,9 @@
     "winston": "^3.19.0",
     "fs-extra" : "^11.3.6",
     "speakeasy" : "^2.0.0",
-    "wdio-docker-service": "^3.2.1"
+    "wdio-docker-service": "^3.2.1",
+    "wdio-cucumberjs-json-reporter": "^3.0.0",
+    "multiple-cucumber-html-reporter": "^3.2.0"
   },
   "lint-staged": {
     "**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}": [
