@@ -118,6 +118,16 @@ class AccountCreation extends BasePage {
         const dropDownField = await lightningInput.getCountryPicklist();
         const comboBoxField = await dropDownField.getComboBox();
         const fieldName = await comboBoxField.getLabelText();
+
+        if(fieldName === "Billing Country") {
+            let element = await browser.$("//lightning-combobox//label[text()='Billing Country']");
+            await element.scrollIntoView();
+            await browser.pause(300);
+            await element.click();
+        }
+        await comboBoxField.waitForVisible();
+
+
         if(fieldName === fieldKey) {
             const baseComboBoxField = await comboBoxField.getBase();
             await baseComboBoxField.expand();
@@ -425,6 +435,7 @@ class AccountCreation extends BasePage {
         const searchBarInput = await searchBar.getInput();
         await searchBarInput.setText(accountName);
         await searchBarInput.focus();
+        await browser.keys(['Enter']);
         await browser.pause(7000);
     }
 

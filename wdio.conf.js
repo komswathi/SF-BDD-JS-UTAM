@@ -9,7 +9,7 @@ const { UtamWdioService } = require('wdio-utam-service');
 const AllureReporter = require('@wdio/allure-reporter');
 // use prefix 'DEBUG=true' to run test in debug mode
 const { DEBUG } = process.env;
-const TIMEOUT = DEBUG ? 60 * 1000 * 30 : 60 * 1000;
+const TIMEOUT = DEBUG ? 60 * 1000 * 30 : 30 * 1000;
 
 exports.config = {
   runner: 'local',

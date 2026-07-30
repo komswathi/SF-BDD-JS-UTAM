@@ -142,13 +142,23 @@ class LoginPage extends BasePage {
     }
 
     async openAppLauncherAndChooseApp(appName) {
-        const container = await utam.load(DesktopLayoutContainer);
-        const appNav = await container.getAppNav();
-        const appLauncher = await (await appNav.getAppLauncherHeader()).getButton();
-        await appLauncher.click();
+       /* const container = await browser.waitUntil(async () =>
+                await utam.load(DesktopLayoutContainer),
+            { timeout: 20000, timeoutMsg: 'DesktopLayoutContainer not loaded' }
+        );*/
 
-        const menu = await utam.load(AppLauncherMenu);
-        const search = await (await menu.getSearchBar()).getLwcInput();
+        let container = await utam.load(DesktopLayoutContainer);
+        try {
+            let appNav = await container.getAppNav();
+            let appLauncher = await (await appNav.getAppLauncherHeader()).getButton();
+            await appLauncher.click();
+        } catch (e) {
+            let appNav = await container.getAppNav();
+            let appLauncher = await (await appNav.getAppLauncherHeader()).getButton();
+            await appLauncher.click();
+        }
+        let menu = await utam.load(AppLauncherMenu);
+        let search = await (await menu.getSearchBar()).getLwcInput();
         await browser.pause(2000);
         await search.setText(appName);
 
