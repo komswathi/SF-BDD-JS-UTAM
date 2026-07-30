@@ -8,6 +8,7 @@ let Page = require('./page.js');
 const BasePage = require('./base.page.js');
 const axios = require('axios');
 const speakeasy = require('speakeasy');
+const { getDecryptedSecrets } = require('../utilities/common.js');
 
 const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours by default
 const {
@@ -57,12 +58,14 @@ class LoginPage extends BasePage {
     }
 
     async logInSalesforce() {
-        ['SF_ORG_URL', 'SF_USERNAME', 'SF_PASSWORD', 'SF_TOTP_SECRET'].forEach((varName) => {
-            if (!process.env[varName]) {
-                throw new Error(`Missing ${varName} environment variable`);
-            }
-        });
-        const { SF_ORG_URL, SF_USERNAME, SF_PASSWORD, SF_TOTP_SECRET } = process.env;
+        // Get decrypted secrets from utilities/common.js
+        const decrypted = getDecryptedSecrets();
+        const { SF_ORG_URL, SF_USERNAME, SF_PASSWORD, SF_TOTP_SECRET } = decrypted;
+
+        if (!SF_ORG_URL || !SF_USERNAME || !SF_PASSWORD || !SF_TOTP_SECRET) {
+            throw new Error(`Missing required credentials in environment`);
+        }
+
         const domDocument = utam.getCurrentDocument();
 
         await browser.navigateTo(SF_ORG_URL);
@@ -76,7 +79,6 @@ class LoginPage extends BasePage {
             this.fillInput(this.emailInput, SF_USERNAME),
             this.fillInput(this.passwordInput, SF_PASSWORD)
         ]);
-
 
         await this.clickElement(this.submitButton);
 

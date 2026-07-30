@@ -6,6 +6,7 @@ const reportObj = require('./reporterUtils/generateHTMLReport.js');
 const { removeSync } = require('fs-extra');
 const cucumberJson = require('wdio-cucumberjs-json-reporter').default;
 const isDocker = process.env.DOCKER_ENV === 'true';
+const { getDecryptedSecrets } = require('./utilities/common.js');
 
 const { UtamWdioService } = require('wdio-utam-service');
 const AllureReporter = require('@wdio/allure-reporter');
@@ -14,6 +15,9 @@ const AllureReporter = require('@wdio/allure-reporter');
 const { DEBUG } = process.env;
 const HEADLESS = process.env.HEADLESS !== 'false'; // default true
 const TIMEOUT = DEBUG ? 60 * 1000 * 30 : 60 * 1000;
+
+// Set global decrypted secrets for use in step definitions
+global.decryptedSecrets = getDecryptedSecrets();
 
 exports.config = {
   runner: 'local',
