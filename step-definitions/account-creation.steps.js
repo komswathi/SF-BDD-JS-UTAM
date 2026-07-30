@@ -7,7 +7,7 @@ const accountPage = require('../pageobjects/account.creation.page');
 const scenarioContext = require('../context/scenario_context');
 
 Given('I am logged into Salesforce', async () => {
-  await loginPage.logInSalesforce();
+  await loginPage.logInSalesforceWithMFA();
   //await loginPage.logInSalesforceViaAPI();
   scenarioContext.getScenarioContext().clear();
 });

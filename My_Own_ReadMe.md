@@ -54,3 +54,15 @@ docker-compose up --build
 
 
 pkill -f chromedriver; pkill -f "Google Chrome"; sleep 2
+
+
+nvm use 20
+rm -rf node_modules package-lock.json
+npm install
+npm run test:ui
+
+
+
+SF_USERNAME=komswathi.cdbfaec6bff4@agentforce.com
+SF_PASSWORD=Jaanshimu_143
+SF_TOTP_SECRET=KJZGHM2GV7MCIJS5UEYEPFWA5UDQKI74

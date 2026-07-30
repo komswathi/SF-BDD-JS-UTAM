@@ -8,7 +8,7 @@ let Page = require('./page.js');
 const BasePage = require('./base.page.js');
 const axios = require('axios');
 const speakeasy = require('speakeasy');
-const { getDecryptedSecrets } = require('../utilities/common.js');
+const { generate, createGuardrails } = require("otplib");
 
 const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours by default
 const {
@@ -58,9 +58,7 @@ class LoginPage extends BasePage {
     }
 
     async logInSalesforce() {
-        // Get decrypted secrets from utilities/common.js
-        const decrypted = getDecryptedSecrets();
-        const { SF_ORG_URL, SF_USERNAME, SF_PASSWORD, SF_TOTP_SECRET } = decrypted;
+        const { SF_ORG_URL, SF_USERNAME, SF_PASSWORD, SF_TOTP_SECRET } = process.env;
 
         if (!SF_ORG_URL || !SF_USERNAME || !SF_PASSWORD || !SF_TOTP_SECRET) {
             throw new Error(`Missing required credentials in environment`);
@@ -68,22 +66,55 @@ class LoginPage extends BasePage {
 
         const domDocument = utam.getCurrentDocument();
 
-        await browser.navigateTo(SF_ORG_URL);
+        browser.navigateTo(SF_ORG_URL);
 
         const totpCode = speakeasy.totp({
-            secret: SF_TOTP_SECRET,
+            secret: atob(SF_TOTP_SECRET),
             encoding: 'base32'
         });
 
         await Promise.all([
-            this.fillInput(this.emailInput, SF_USERNAME),
-            this.fillInput(this.passwordInput, SF_PASSWORD)
+            this.fillInput(this.emailInput, atob(SF_USERNAME)),
+            this.fillInput(this.passwordInput, atob(SF_PASSWORD))
         ]);
 
         await this.clickElement(this.submitButton);
 
         // Enter OTP and save
         await this.fillInput(this.otpInput, totpCode);
+        await this.clickElement(this.saveButton);
+
+        return domDocument;
+    }
+
+
+    async logInSalesforceWithMFA() {
+        const { SF_ORG_URL, SF_USERNAME, SF_PASSWORD, SF_TOTP_SECRET } = process.env;
+
+        if (!SF_ORG_URL || !SF_USERNAME || !SF_PASSWORD || !SF_TOTP_SECRET) {
+            throw new Error(`Missing required credentials in environment`);
+        }
+
+        const domDocument = utam.getCurrentDocument();
+
+        browser.navigateTo(SF_ORG_URL);
+
+
+        // Generate TOTP with otplib
+        const token = await generate({
+            secret: atob(SF_TOTP_SECRET),
+            guardrails: createGuardrails({ MIN_SECRET_BYTES: 10 }),
+        });
+
+        await Promise.all([
+            this.fillInput(this.emailInput, atob(SF_USERNAME)),
+            this.fillInput(this.passwordInput, atob(SF_PASSWORD))
+        ]);
+
+        await this.clickElement(this.submitButton);
+
+        // Enter OTP and save
+        await this.fillInput(this.otpInput, token);
         await this.clickElement(this.saveButton);
 
         return domDocument;
