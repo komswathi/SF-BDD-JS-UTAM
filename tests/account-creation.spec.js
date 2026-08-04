@@ -1,6 +1,6 @@
 
-const loginPage = require('../pageObjects/login.page.mjs');
-const accountCreationPage = require('../pageObjects/account.creation.page.mjs');
+const loginPage = require('../pageObjects/login.page.js');
+const accountCreationPage = require('../pageObjects/account.creation.page.js');
 
 describe('utam-examples', () => {
   beforeEach(async () => {

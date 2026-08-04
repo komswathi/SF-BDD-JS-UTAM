@@ -2,7 +2,6 @@
   "name": "salesforce-utam-e2e-testing",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
   "description": "SFDX template for using UTAM to establish Salesforce E2E UI test automation in your project",
   "author": {
     "name": "Sebastiano Schwarz",

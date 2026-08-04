@@ -2,7 +2,8 @@ import dotenv from 'dotenv';
 import os from 'os';
 import fs from 'fs';
 import path from 'path';
-import { removeSync } from 'fs-extra';
+import pkg from 'fs-extra';
+const { removeSync } = pkg;
 import { UtamWdioService } from 'wdio-utam-service';
 
 dotenv.config();
@@ -91,7 +92,7 @@ export const config = {
 
   onComplete: async (exitCode, config, capabilities, results) => {
     try {
-      const reporterUtils = await import('./reporterUtils/generateHTMLReport.mjs');
+      const reporterUtils = await import('./reporterUtils/generateHTMLReport.js');
       reporterUtils.generateHTMLReport();
     } catch (e) {
       console.log('Report generation warning:', e.message);
@@ -118,7 +119,7 @@ export const config = {
   ],
 
   cucumberOpts: {
-    require: ['./step-definitions/**/*.mjs'],
+    require: ['./step-definitions/**/*.js'],
     format: [
       'pretty',
       'json:./report/cucumber_report.json'

@@ -1,4 +1,4 @@
-import BasePage from './base.page.mjs';
+import BasePage from './base.page.js';
 import axios from 'axios';
 import speakeasy from 'speakeasy';
 import { generate, createGuardrails } from 'otplib';
@@ -7,7 +7,7 @@ import {
     RecordActionWrapper,
     ObjectHome,
     DesktopLayoutContainer
-} from './index.mjs';
+} from './index.js';
 
 const SESSION_TIMEOUT = 2 * 60 * 60 * 100;
 

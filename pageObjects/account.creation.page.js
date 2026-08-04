@@ -1,13 +1,13 @@
 import logger from '../utils/logger.mjs';
-import Page from './page.mjs';
-import scenarioContext from '../context/scenario_context.mjs';
+import Page from './page.js';
+import scenarioContext from '../context/scenario_context.js';
 import {
     AppLauncherMenu,
     RecordActionWrapper,
     ObjectHome,
     DesktopLayoutContainer,
     RecordLayoutInputAddress
-} from './index.mjs';
+} from './index.js';
 
 let listViewHeader;
 let listViewName;

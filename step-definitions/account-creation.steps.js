@@ -1,7 +1,7 @@
 import { Given, When, Then } from '@cucumber/cucumber';
-import loginPage from '../pageObjects/login.page.mjs';
-import accountPage from '../pageObjects/account.creation.page.mjs';
-import scenarioContext from '../context/scenario_context.mjs';
+import loginPage from '../pageObjects/login.page.js';
+import accountPage from '../pageObjects/account.creation.page.js';
+import scenarioContext from '../context/scenario_context.js';
 
 Given('I am logged into Salesforce', async () => {
   await loginPage.logInSalesforceWithMFA();
