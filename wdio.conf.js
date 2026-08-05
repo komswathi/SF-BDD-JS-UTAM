@@ -5,6 +5,7 @@ import path from 'path';
 import pkg from 'fs-extra';
 const { removeSync } = pkg;
 import { UtamWdioService } from 'wdio-utam-service';
+const cucumberJson = import('wdio-cucumberjs-json-reporter').default;
 
 dotenv.config();
 
@@ -71,7 +72,6 @@ export const config = {
   afterStep: async function (step, scenario, result, context) {
     if (!result.passed) {
       try {
-        const cucumberJson = (await import('wdio-cucumberjs-json-reporter')).default;
         const screenshot = await browser.takeScreenshot();
         await cucumberJson.attach(screenshot, 'image/png');
       } catch (e) {
@@ -82,7 +82,6 @@ export const config = {
 
   afterScenario: async function (world, result, context) {
     try {
-      const cucumberJson = (await import('wdio-cucumberjs-json-reporter')).default;
       const screenshot = await browser.takeScreenshot();
       cucumberJson.attach(screenshot, 'image/png');
     } catch (e) {

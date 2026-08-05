@@ -1,13 +1,11 @@
-'use strict';
+import { defineConfig } from 'eslint/config';
+import eslintJs from '@eslint/js';
+import jestPlugin from 'eslint-plugin-jest';
+import salesforceLwcConfig from '@salesforce/eslint-config-lwc/recommended';
+import i18n from '@salesforce/eslint-config-lwc/i18n';
+import globals from 'globals';
 
-const { defineConfig } = require('eslint/config');
-const eslintJs = require('@eslint/js');
-const jestPlugin = require('eslint-plugin-jest');
-const salesforceLwcConfig = require('@salesforce/eslint-config-lwc/recommended');
-const i18n = require('@salesforce/eslint-config-lwc/i18n');
-const globals = require('globals');
-
-module.exports = defineConfig([
+export default defineConfig([
   // LWC configuration for force-app/main/default/lwc
   {
     files: ['force-app/main/default/lwc/**/*.js'],

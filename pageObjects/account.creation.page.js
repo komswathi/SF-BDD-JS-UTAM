@@ -1,5 +1,5 @@
-import logger from '../utils/logger.mjs';
-import Page from './page.js';
+import logger from '../utils/logger.js';
+import BasePage from "./base.page.js";
 import scenarioContext from '../context/scenario_context.js';
 import {
     AppLauncherMenu,

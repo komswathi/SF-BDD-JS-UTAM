@@ -5,4 +5,4 @@ class Common {
     }
 }
 
-module.exports = new Common();
+export default new Common();

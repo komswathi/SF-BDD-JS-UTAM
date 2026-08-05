@@ -1,6 +1,5 @@
-
-const loginPage = require('../pageObjects/login.page.js');
-const accountCreationPage = require('../pageObjects/account.creation.page.js');
+import loginPage from '../pageObjects/login.page.js';
+import accountCreationPage from '../pageObjects/account.creation.page.js';
 
 describe('utam-examples', () => {
   beforeEach(async () => {

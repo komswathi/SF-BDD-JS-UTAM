@@ -17,4 +17,4 @@ class Scenario_context {
     }
 }
 
-module.exports = new Scenario_context();
+export default new Scenario_context();

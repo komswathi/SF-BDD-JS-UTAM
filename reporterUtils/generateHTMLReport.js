@@ -1,5 +1,5 @@
-const report = require('multiple-cucumber-html-reporter');
-const os = require('os');
+import report from 'multiple-cucumber-html-reporter';
+import os from 'os';
 
 function getCurrentDateTime() {
     const now = new Date();
@@ -16,45 +16,37 @@ function getCurrentDateTime() {
 }
 
 function getChromeVersion() {
-    try {
-        const chromedriver = require('chromedriver');
-        const versionMatch = chromedriver.version.match(/(\d+\.\d+)/);
-        return versionMatch ? versionMatch[1] : '149.0';
-    } catch (e) {
-        return '149.0';
-    }
+    return '149.0';
 }
 
-module.exports = {
-    generateHTMLReport() {
-        const executionTime = getCurrentDateTime();
+export function generateHTMLReport() {
+    const executionTime = getCurrentDateTime();
 
-        report.generate({
-            jsonDir: './report/',
-            reportPath: './report/cucumber-html-report',
-            metadata: {
-                browser: {
-                    name: 'chrome',
-                    version: getChromeVersion(),
-                },
-                device: 'Local test machine',
-                platform: {
-                    name: os.platform(),
-                    version: os.release(),
-                },
+    report.generate({
+        jsonDir: './report/',
+        reportPath: './report/cucumber-html-report',
+        metadata: {
+            browser: {
+                name: 'chrome',
+                version: getChromeVersion(),
             },
-            customData: {
-                title: 'Salesforce UTAM E2E Test Execution Report',
-                data: [
-                    { label: 'Project', value: 'Salesforce UTAM E2E Testing' },
-                    { label: 'Release', value: '1.0.0' },
-                    { label: 'Cycle', value: 'BDD Cucumber Tests' },
-                    { label: 'Execution Start Time', value: executionTime },
-                    { label: 'Execution End Time', value: executionTime },
-                    { label: 'Node Version', value: process.version },
-                    { label: 'OS', value: `${os.platform()} ${os.release()}` },
-                ],
+            device: 'Local test machine',
+            platform: {
+                name: os.platform(),
+                version: os.release(),
             },
-        });
-    }
+        },
+        customData: {
+            title: 'Salesforce UTAM E2E Test Execution Report',
+            data: [
+                { label: 'Project', value: 'Salesforce UTAM E2E Testing' },
+                { label: 'Release', value: '1.0.0' },
+                { label: 'Cycle', value: 'BDD Cucumber Tests' },
+                { label: 'Execution Start Time', value: executionTime },
+                { label: 'Execution End Time', value: executionTime },
+                { label: 'Node Version', value: process.version },
+                { label: 'OS', value: `${os.platform()} ${os.release()}` },
+            ],
+        },
+    });
 }

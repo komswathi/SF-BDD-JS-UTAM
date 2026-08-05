@@ -1,8 +1,9 @@
-const { jestConfig } = require('@salesforce/sfdx-lwc-jest/config');
+import { jestConfig } from '@salesforce/sfdx-lwc-jest/config';
+
 const setupFilesAfterEnv = jestConfig.setupFilesAfterEnv || [];
 setupFilesAfterEnv.push('<rootDir>/jest-sa11y-setup.js');
 
-module.exports = {
+export default {
   ...jestConfig,
   testRegex: '/__tests__/.*.test.js$',
   coverageReporters: ['clover', 'json', 'text', 'lcov', 'cobertura'],

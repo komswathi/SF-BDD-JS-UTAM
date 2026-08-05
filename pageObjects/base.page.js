@@ -1,19 +1,13 @@
-//import { ChainablePromiseElement } from 'webdriverio';
-/*import dotenv from 'dotenv';
-dotenv.config();*/
-//import * as Constants from "../utils/userDetails.js";
-
-import {error} from "@salesforce/sfdx-lwc-jest/src/log";
-
-let baseUrl = process.env.BASE_URL;
-let Page = require('./page.js');
-const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours by default
-const {
+import Page from './page.js';
+import {
     AppLauncherMenu,
     RecordActionWrapper,
     ObjectHome,
     DesktopLayoutContainer
-} = require('./index.js');
+} from './index.js';
+
+let baseUrl = process.env.BASE_URL;
+const SESSION_TIMEOUT = 2 * 60 * 60 * 1000;
 class BasePage extends Page {
     async chooseAppNavBar(tabName) {
         const container = await utam.load(DesktopLayoutContainer);

@@ -2,6 +2,7 @@
   "name": "salesforce-utam-e2e-testing",
   "private": true,
   "version": "1.0.0",
+  "type": "module",
   "description": "SFDX template for using UTAM to establish Salesforce E2E UI test automation in your project",
   "author": {
     "name": "Sebastiano Schwarz",
@@ -15,13 +16,13 @@
   "scripts": {
     "lint": "eslint **/force-app/**/*.js",
     "lint:sonar": "eslint -f json -o eslint-report.json **/lwc/**/*.js",
-    "test": "npm run test:unit",
+    "test": "npm run test:ui",
     "test:unit": "sfdx-lwc-jest --skipApiVersionCheck",
     "test:unit:watch": "sfdx-lwc-jest --watch --skipApiVersionCheck",
     "test:unit:debug": "sfdx-lwc-jest --debug --skipApiVersionCheck",
     "test:unit:coverage": "sfdx-lwc-jest --coverage --skipApiVersionCheck",
-    "test:local": "cross-env wdio wdio.conf.js",
-    "test:ui": "wdio",
+    "test:local": "wdio run wdio.conf.js",
+    "test:ui": "wdio run wdio.conf.js",
     "test:ui:compile": "utam -c utam.config.js",
     "test:ui:generate:login": "node scripts/generate-login-url.js",
     "prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\" --check",
@@ -31,7 +32,6 @@
     "test:docker": "docker-compose up --build --abort-on-container-exit"
   },
   "devDependencies": {
-
     "@wdio/allure-reporter": "^8.43.0",
     "@wdio/cli": "^8.43.0",
     "@wdio/cucumber-framework": "^8.43.0",
@@ -74,9 +74,8 @@
     "fs-extra" : "^11.3.6",
     "speakeasy" : "^2.0.0",
     "wdio-docker-service": "^3.2.1",
-    "otplib" :"13.4.1",
-    "crypto" : "^1.0.1",
-    "wdio-cucumberjs-json-reporter": "^3.0.0",
+    "otplib": "^13.4.1",
+    "wdio-cucumberjs-json-reporter": "5.2.1",
     "multiple-cucumber-html-reporter": "^3.2.0"
   },
   "lint-staged": {
