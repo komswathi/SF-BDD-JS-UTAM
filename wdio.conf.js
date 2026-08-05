@@ -5,7 +5,7 @@ import path from 'path';
 import pkg from 'fs-extra';
 const { removeSync } = pkg;
 import { UtamWdioService } from 'wdio-utam-service';
-const cucumberJson = import('wdio-cucumberjs-json-reporter').default;
+import cucumberJson from 'wdio-cucumberjs-json-reporter';
 
 dotenv.config();
 
@@ -73,9 +73,9 @@ export const config = {
     if (!result.passed) {
       try {
         const screenshot = await browser.takeScreenshot();
-        await cucumberJson.attach(screenshot, 'image/png');
+        cucumberJson.attach(screenshot, 'image/png');
       } catch (e) {
-        console.log('Screenshot attach failed in afterStep:', e.message);
+        console.log('Screenshot capture failed in afterStep:', e.message);
       }
     }
   },
@@ -114,14 +114,17 @@ export const config = {
           os_version: os.version()
         }
       }
-    ]
+    ],
+    ['cucumberjs-json', {
+      jsonFolder: 'report/',
+      language: 'en'
+    }]
   ],
 
   cucumberOpts: {
     require: ['./step-definitions/**/*.js'],
     format: [
-      'pretty',
-      'json:./report/cucumber_report.json'
+      'pretty'
     ],
     backtrace: false,
     requireModule: [],

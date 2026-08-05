@@ -22,7 +22,8 @@
     "test:unit:debug": "sfdx-lwc-jest --debug --skipApiVersionCheck",
     "test:unit:coverage": "sfdx-lwc-jest --coverage --skipApiVersionCheck",
     "test:local": "wdio run wdio.conf.js",
-    "test:ui": "wdio run wdio.conf.js",
+    "test:uit": "wdio run wdio.conf.js",
+    "test:ui": "NODE_OPTIONS=\"--no-experimental-require-module\" wdio run wdio.conf.js",
     "test:ui:compile": "utam -c utam.config.js",
     "test:ui:generate:login": "node scripts/generate-login-url.js",
     "prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\" --check",
@@ -75,8 +76,9 @@
     "speakeasy" : "^2.0.0",
     "wdio-docker-service": "^3.2.1",
     "otplib": "^13.4.1",
-    "wdio-cucumberjs-json-reporter": "5.2.1",
-    "multiple-cucumber-html-reporter": "^3.2.0"
+    "wdio-cucumberjs-json-reporter": "^5.0.0",
+    "multiple-cucumber-html-reporter": "^3.2.0",
+    "chromedriver": "^150.0.0"
   },
   "lint-staged": {
     "**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}": [
