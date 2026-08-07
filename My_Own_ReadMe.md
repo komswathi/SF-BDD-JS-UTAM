@@ -1,7 +1,15 @@
 **UTAM Jasmine**
+
+nvm install 23
+nvm use 23
+node -v
+
+
 npm install
 
 npm install --legacy-peer-deps
+
+
 
 sf org login web --set-default
 
@@ -11,11 +19,18 @@ npm run test:ui:generate:login
 
 npm run test:ui
 
+lsof -i :9515
+
+killall -9 chromedriver
+
+npm run test:ui -- --cucumberOpts.tagExpression='@lead'
+
 brew install allure
 allure --version
 
 allure generate
 allure serve
+
 
 jar xf ./salesforce-pageobjects-12.0.0-javadoc.jar
 
@@ -27,7 +42,7 @@ npm install --legacy-peer-deps
 npm run test:ui:generate:login
 npm run test:local
 
-
+npm run test:ui -- -- --cucumberOpts.tagExpression='@account'
 Docker
 brew install docker-compose
 
@@ -71,3 +86,16 @@ swathikomeravelli@Swathis-MacBook-Air SF-BDD-JS-UTAM % npm run test:ui
 
 > salesforce-utam-e2e-testing@1.0.0 test:ui
 > NODE_OPTIONS="--no-experimental-require-module" wdio run wdio.conf.js
+
+
+
+**EDGE MAC**
+# Create symlink
+sudo ln -s "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge" /usr/local/bin/msedge
+
+# Verify
+which msedge
+# Output: /usr/local/bin/msedge
+
+# Test
+msedge --version

@@ -17,6 +17,8 @@ class LoginPage extends BasePage {
     get submitButton () {return ("input[type='submit']");}
     get otpInput () {return ("input[id='tc']");}
     get saveButton () {return (("input[id='save']"));}
+    get totpError () {return ("[id='tc-error']")}
+    get appNav () {return ("one-appnav")}
 
     async logInSalesforce_copy() {
         // Check environment variables
@@ -81,8 +83,85 @@ class LoginPage extends BasePage {
         return domDocument;
     }
 
+    async logInSalesforceIfNotLoggedIn() {
+        try {
+            console.log('Attempting to login...');
+            await this.logInSalesforceWithMFA();
+            console.log('Already logged in or login successful');
+
+        } catch (e) {
+            console.error('Login failed:', e.message);
+            throw e;
+        }
+    }
 
     async logInSalesforceWithMFA() {
+        try {
+            const url = await browser.getUrl();
+            if (url.includes('lightning') && !url.includes('login')) {
+                console.log('Already logged in');
+                await browser.navigateTo(process.env.SF_ORG_URL);
+                return;
+            }
+        } catch (e) {
+        }
+
+        const { SF_ORG_URL, SF_USERNAME, SF_PASSWORD, SF_TOTP_SECRET } = process.env;
+
+        if (!SF_ORG_URL || !SF_USERNAME || !SF_PASSWORD || !SF_TOTP_SECRET) {
+            throw new Error(`Missing required credentials in environment`);
+        }
+
+        await browser.navigateTo(SF_ORG_URL);
+
+        // Fill login form
+        await Promise.all([
+            this.fillInput(this.emailInput, atob(SF_USERNAME)),
+            this.fillInput(this.passwordInput, atob(SF_PASSWORD))
+        ]);
+        await this.clickElement(this.submitButton);
+
+        // TOTP with retry
+        let lastError;
+        for (let attempt = 1; attempt <= 6; attempt++) {
+            try {
+                console.log(`TOTP attempt ${attempt}/3`);
+
+                const token = await generate({
+                    secret: atob(SF_TOTP_SECRET),
+                    guardrails: createGuardrails({ MIN_SECRET_BYTES: 10 }),
+                });
+
+                await this.fillInput(this.otpInput, token);
+                await this.clickElement(this.saveButton);
+
+                // Wait for redirect to Lightning
+                await browser.waitUntil(
+                    async () => {
+                        const url = await browser.getUrl();
+                        return url.includes('lightning') && !url.includes('login');
+                    },
+                    { timeout: 10000, timeoutMsg: 'Did not redirect to Lightning' }
+                );
+
+                console.log('✓ Login successful');
+                return;
+
+            } catch (e) {
+                lastError = e;
+                console.error(`Attempt ${attempt} failed:`, e.message);
+
+                if (attempt < 3) {
+                    await browser.pause(5000);
+                }
+            }
+        }
+
+        throw new Error(`Login failed after 3 TOTP attempts: ${lastError.message}`);
+    }
+
+
+    async logInSalesforceWithMFA_WithoutRetry() {
         const { SF_ORG_URL, SF_USERNAME, SF_PASSWORD, SF_TOTP_SECRET } = process.env;
 
         if (!SF_ORG_URL || !SF_USERNAME || !SF_PASSWORD || !SF_TOTP_SECRET) {
@@ -90,39 +169,43 @@ class LoginPage extends BasePage {
         }
 
         const domDocument = utam.getCurrentDocument();
-
-        browser.navigateTo(SF_ORG_URL);
-
-
+        await browser.navigateTo(SF_ORG_URL);
         // Generate TOTP with otplib
-        const token = await generate({
-            secret: atob(SF_TOTP_SECRET),
-            guardrails: createGuardrails({ MIN_SECRET_BYTES: 10 }),
-        });
+        let token;
+            token = await generate({
+                secret: atob(SF_TOTP_SECRET),
+                guardrails: createGuardrails({ MIN_SECRET_BYTES: 10 }),
+            });
 
         await Promise.all([
             this.fillInput(this.emailInput, atob(SF_USERNAME)),
             this.fillInput(this.passwordInput, atob(SF_PASSWORD))
         ]);
-
         await this.clickElement(this.submitButton);
-
         // Enter OTP and save
-        await this.fillInput(this.otpInput, token);
+        await this.fillInput(this.otpInput, process.env.TOTP_CODE);
         await this.clickElement(this.saveButton);
-
+        await browser.$(this.appNav).waitForDisplayed({timeout : 6000, timeoutMsg : "App navigation is not displayed"});
+        /*await browser.waitUntil(
+                async () => ( await $(this.totpError).isDisplayed(),
+                {
+                   timeout : 2000,
+                   timeoutMsg : "TOTP error is displayed"
+                }
+            )
+        );*/
         return domDocument;
     }
 
     async fillInput(selector, value) {
         const element = await browser.$(selector);
-        await element.waitForDisplayed({ timeout: this.loginTimeout });
+        await element.waitForDisplayed({ timeout: 8000 });
         await element.setValue(value);
     }
 
     async clickElement(selector) {
         const element = await browser.$(selector);
-        await element.waitForDisplayed({ timeout: this.loginTimeout });
+        await element.waitForDisplayed({ timeout: 8000 });
         await element.click();
     }
 

@@ -14,7 +14,8 @@ class BasePage extends Page {
         const appNav = await container.getAppNav();
         const appNavBar = await appNav.getAppNavBar();
         const tab = await appNavBar.getNavItem(tabName);
-        await tab.clickAndWaitForUrl('lightning/o/Account/list?filterName=__Recent');
+        let name = tabName.slice(0, -1);
+        await tab.clickAndWaitForUrl(`lightning/o/${name}`);
     }
 
     async getAppContextName() {

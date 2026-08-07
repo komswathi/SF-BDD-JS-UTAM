@@ -6,7 +6,12 @@ import pkg from 'fs-extra';
 const { removeSync } = pkg;
 import { UtamWdioService } from 'wdio-utam-service';
 import cucumberJson from 'wdio-cucumberjs-json-reporter';
+import { fileURLToPath } from 'url';        // ← ADD THIS
+import { dirname } from 'path';             // ← ADD THIS
 
+const __filename = fileURLToPath(import.meta.url);  // ← ADD THIS
+const __dirname = dirname(__filename);
+let driverServerInstance = null;
 dotenv.config();
 
 const isDocker = process.env.DOCKER_ENV === 'true';
@@ -15,6 +20,15 @@ const TIMEOUT = DEBUG ? 60 * 1000 * 30 : 30 * 1000;
 
 const screenshotDir = './screenshots';
 const jsonReportDir = './report/json';
+
+let localChromedriverPath = path.resolve(
+    __dirname,
+    'node_modules',
+    'chromedriver',
+    'lib',
+    'chromedriver',
+    'chromedriver'
+);
 
 [screenshotDir, jsonReportDir].forEach(dir => {
   if (!fs.existsSync(dir)) {
@@ -25,27 +39,43 @@ const jsonReportDir = './report/json';
 export const config = {
   runner: 'local',
   specs: ['./features/**/*.feature'],
-  maxInstances: 1,
+  // maxInstances: 3,
   capabilities: [{
-    maxInstances: 1,
+    maxInstances: 3,
     browserName: 'chrome',
     acceptInsecureCerts: true,
-    'goog:chromeOptions': {
+    // edgeDriverPath: '/Users/swathikomeravelli/Automation/UTAM/SF-BDD-JS-UTAM/node_modules/edgedriver/bin/msedgedriver',
+    'google:chromeOptions': {
       args: [
         '--no-sandbox',
         '--disable-infobars',
         '--disable-gpu',
         '--window-size=1440,735'
       ],
+      //binary: '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
     }
   }],
   logLevel: 'debug',
   bail: 0,
-  waitforTimeout: TIMEOUT,
+  waitForTimeout: TIMEOUT,
   connectionRetryTimeout: 120000,
   connectionRetryCount: 3,
   automationProtocol: 'webdriver',
   services: [
+   /* ['wdio-edgedriver-service', {
+      port: 9515,
+      outputDir: './drivers',
+      skipSeleniumStandaloneDownload: true,
+      drivers: [{
+        browser: 'MicrosoftEdge',
+        path: '/Users/swathikomeravelli/Automation/UTAM/SF-BDD-JS-UTAM/drivers/edge/mac/msedgedriver'
+      }]
+    }],*/
+   /* ['chromedriver', {
+      logFileName: 'wdio-chromedriver.log', // default
+      outputDir: 'driver-logs', // overwrites the config.outputDir
+      args: ['--silent']
+    }],*/
     [
       UtamWdioService,
       {
@@ -80,6 +110,16 @@ export const config = {
     }
   },
 
+  beforeScenario: async function(world, context) {
+ /*   if(fs.existsSync(localChromedriverPath)) {
+      console.log(`[DRIVER] Starting local chromedriver binary from disk : ${localChromedriverPath}`);
+      const execFile = (await import('child_process')).execFile;
+      driverServerInstance = execFile(localChromedriverPath, ['--port=9515', '--url-base=/'], (err, stdout, stderr) => {
+        if(err && !err.killed) {console.error('Chromedriver process error:', err)}
+      });
+    }*/
+  },
+
   afterScenario: async function (world, result, context) {
     try {
       const screenshot = await browser.takeScreenshot();
@@ -87,6 +127,12 @@ export const config = {
     } catch (e) {
       console.log('Screenshot attach failed in afterScenario:', e.message);
     }
+/*
+    // Kill the chromedriver process
+    if(driverServerInstance) {
+      driverServerInstance.kill();
+      console.log('[DRIVER] Chromedriver stopped');
+    }*/
   },
 
   onComplete: async (exitCode, config, capabilities, results) => {

@@ -4,7 +4,7 @@ import accountPage from '../pageObjects/account.creation.page.js';
 import scenarioContext from '../context/scenario_context.js';
 
 Given('I am logged into Salesforce', async () => {
-  await loginPage.logInSalesforceWithMFA();
+  await loginPage.logInSalesforceIfNotLoggedIn();
   //await loginPage.logInSalesforceViaAPI();
   scenarioContext.getScenarioContext().clear();
 });

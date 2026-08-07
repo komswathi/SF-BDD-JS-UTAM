@@ -1,8 +1,10 @@
+@regression
 Feature: Account Creation in Salesforce Sales App
 
   Background:
     Given I am logged into Salesforce
 
+  @account
   Scenario: Create account record with full account and address details
     When I open app launcher and choose "Sales"
     Then app context should display "Sales"
@@ -34,3 +36,10 @@ Feature: Account Creation in Salesforce Sales App
       | Billing Country          | United Kingdom       |
     When I search for the created account
     Then account should be displayed in the list
+
+
+  @account
+  Scenario: Create account
+    When I open app launcher and choose "Sales"
+    Then app context should display "Sales"
+    When I navigate to "Accounts" tab
