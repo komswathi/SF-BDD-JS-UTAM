@@ -111,6 +111,8 @@ export const config = {
   },
 
   beforeScenario: async function(world, context) {
+    const instanceId = process.env.WDIO_WORKER_ID || '0';
+    console.log(`Running on instance: ${instanceId}`);
  /*   if(fs.existsSync(localChromedriverPath)) {
       console.log(`[DRIVER] Starting local chromedriver binary from disk : ${localChromedriverPath}`);
       const execFile = (await import('child_process')).execFile;
