@@ -87,6 +87,7 @@ class AccountCreation extends BasePage {
      */
     async selectDropdownValue(item, value) {
         const dropDownField = await item.getPicklist();
+        await this.scrollUTAMElementIntoView(dropDownField);
         const baseComboBoxField = await dropDownField.getBaseCombobox();
         await baseComboBoxField.expand();
         const items = await baseComboBoxField.getItems();
@@ -103,7 +104,7 @@ class AccountCreation extends BasePage {
     async fillTextField(item, value) {
         const input = await item.getLightningInputWrapper()
             .then(w => w.getInput())
-            .catch(() => item.getInput()); // Fallback for direct input
+            .catch(() => item.getInput());
 
         await input.setText(value);
     }
@@ -118,17 +119,17 @@ class AccountCreation extends BasePage {
         const comboBoxField = await dropDownField.getComboBox();
         const fieldName = await comboBoxField.getLabelText();
 
-        if(fieldName === "Billing Country") {
+        /*if(fieldName === "Billing Country") {
             let element = await browser.$("//lightning-combobox//label[text()='Billing Country']");
             await element.scrollIntoView();
             await browser.pause(300);
             await element.click();
-        }
-        await comboBoxField.waitForVisible();
-
+        }*/
 
         if(fieldName === fieldKey) {
             const baseComboBoxField = await comboBoxField.getBase();
+            await this.scrollUTAMElementIntoView(comboBoxField);
+            await comboBoxField.waitForVisible();
             await baseComboBoxField.expand();
             const items = await baseComboBoxField.getItems();
             for (const item of items) {
@@ -457,6 +458,19 @@ class AccountCreation extends BasePage {
         const message = 'Account "gertge" was created.';
         const regex = /Account ".+?" was created\./;
         expect(message).toMatch(regex);
+    }
+
+    async scrollUTAMElementIntoView(utamElement) {
+        try {
+            // Get the underlying WebDriver element
+            const element = await utamElement.getRoot();
+            // Scroll into view
+            await element.scrollToCenter();
+            await browser.pause(500);
+            console.log('Element scrolled into view');
+        } catch (e) {
+            console.warn('Failed to scroll element:', e.message);
+        }
     }
 
 

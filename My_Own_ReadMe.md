@@ -99,3 +99,18 @@ which msedge
 
 # Test
 msedge --version
+
+
+WDIO_SKIP_DRIVER_UPDATE=true npm run test:ui:edge 
+
+npm run test:ui:edge -- --cucumberOpts.tagExpression='@lead'
+
+
+**nvm use**
+
+**npm install**
+
+**npm run test:ui:edge -- --cucumberOpts.tagExpression='@regression'**
+
+**npm run test:ui:chrome -- --cucumberOpts.tagExpression='@regression'**
+

@@ -38,7 +38,7 @@ Feature: Account Creation in Salesforce Sales App
     Then account should be displayed in the list
 
 
-  @account
+  @account1
   Scenario: Create account
     When I open app launcher and choose "Sales"
     Then app context should display "Sales"
