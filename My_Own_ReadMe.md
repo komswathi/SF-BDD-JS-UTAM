@@ -72,9 +72,9 @@ npm run test-local
 
 
 
-With WDIO V8 and Node 18, this frameworks with command **wdio run wdio.conf.js**
+With WDIO V8 and Node 18, this frameworks with command **wdio run wdio.conf.chrome.js**
 
-With WDIO V8 and Node 23, this frameworks with command **NODE_OPTIONS="--no-experimental-require-module" wdio run wdio.conf.js**
+With WDIO V8 and Node 23, this frameworks with command **NODE_OPTIONS="--no-experimental-require-module" wdio run wdio.conf.chrome.js**
 
 
 
@@ -85,7 +85,7 @@ swathikomeravelli@Swathis-MacBook-Air SF-BDD-JS-UTAM % npm install
 swathikomeravelli@Swathis-MacBook-Air SF-BDD-JS-UTAM % npm run test:ui
 
 > salesforce-utam-e2e-testing@1.0.0 test:ui
-> NODE_OPTIONS="--no-experimental-require-module" wdio run wdio.conf.js
+> NODE_OPTIONS="--no-experimental-require-module" wdio run wdio.conf.chrome.js
 
 
 
