@@ -25,6 +25,8 @@
     "test:uit": "wdio run wdio.conf.chrome.js",
     "test:ui:chrome": "NODE_OPTIONS=\"--no-experimental-require-module\" wdio run wdio.conf.chrome.js",
     "test:ui:edge": "NODE_OPTIONS=\"--no-experimental-require-module\" wdio run wdio.conf.edge.js",
+    "test:edge": "NODE_OPTIONS=\"--no-experimental-require-module\" wdio run wdio.edge.conf.js",
+    "test:chrome": "NODE_OPTIONS=\"--no-experimental-require-module\" wdio run wdio.chrome.conf.js",
     "debug:edge:account": "node --enable-source-maps --inspect-brk ./node_modules/@wdio/cli/bin/wdio.js run wdio.conf.edge.js -- --cucumberOpts.tagExpression='@account'",
     "test:ui:compile": "utam -c utam.config.js",
     "test:ui:generate:login": "node scripts/generate-login-url.js",
