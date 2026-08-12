@@ -82,6 +82,7 @@ export const config = {
   connectionRetryTimeout: 120000,
   connectionRetryCount: 3,
   automationProtocol: 'webdriver',
+  logLevel: 'warn',
   services: [
     [
       UtamWdioService,
@@ -119,6 +120,8 @@ export const config = {
   beforeScenario: async function(world, context) {
     const instanceId = process.env.WDIO_WORKER_ID || '0';
     console.log(`Running on instance: ${instanceId}`);
+
+    
   },
 
   afterScenario: async function (world, result, context) {

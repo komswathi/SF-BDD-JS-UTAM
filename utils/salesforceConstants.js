@@ -1,0 +1,12 @@
+export const TIMEOUTS = {
+    PAGE_LOAD: 15000,
+    ELEMENT_VISIBLE: 5000,
+    MODAL_APPEAR: 3000,
+    SEARCH_RESULTS: 7000,
+    ONE_MINUTE: 60000
+};
+
+export const WAIT_INTERVALS = {
+    STANDARD: 500,
+    ELEMENT: 300
+};

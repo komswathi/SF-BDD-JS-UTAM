@@ -6,8 +6,6 @@ import {
     DesktopLayoutContainer
 } from './index.js';
 
-let baseUrl = process.env.BASE_URL;
-const SESSION_TIMEOUT = 2 * 60 * 60 * 1000;
 class BasePage extends Page {
     async chooseAppNavBar(tabName) {
         const container = await utam.load(DesktopLayoutContainer);

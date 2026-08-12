@@ -8,6 +8,7 @@ import {
     ObjectHome,
     DesktopLayoutContainer
 } from './index.js';
+import {TIMEOUTS, WAIT_INTERVALS} from "../utils/salesforceConstants.js";
 
 const SESSION_TIMEOUT = 2 * 60 * 60 * 100;
 
@@ -17,40 +18,7 @@ class LoginPage extends BasePage {
     get submitButton () {return ("input[type='submit']");}
     get otpInput () {return ("input[id='tc']");}
     get saveButton () {return (("input[id='save']"));}
-    get totpError () {return ("[id='tc-error']")}
     get appNav () {return ("one-appnav")}
-
-    async logInSalesforce_copy() {
-        // Check environment variables
-        ['SALESFORCE_LOGIN_URL', 'SALESFORCE_LOGIN_TIME'].forEach((varName) => {
-            if (!process.env[varName]) {
-                throw new Error(`Missing ${varName} environment variable`);
-            }
-        });
-        const { SALESFORCE_LOGIN_URL, SALESFORCE_LOGIN_TIME } = process.env;
-
-        // Check for Salesforce session timeout
-        if (new Date().getTime() - parseInt(SALESFORCE_LOGIN_TIME, 10) > SESSION_TIMEOUT) {
-            throw new Error(`Salesforce session timed out. Re-authenticate before running tests.`);
-        }
-
-
-        // Navigate to login URL
-        await browser.navigateTo(SALESFORCE_LOGIN_URL);
-
-        // Wait until the OTP/frontdoor redirect completes and we are on a Lightning page.
-        // The URL transitions: frontdoor.jsp → contentDoor → lightning.force.com/lightning[/...]
-        // We accept any lightning.force.com URL that is not an intermediate redirect page.
-        const domDocument = utam.getCurrentDocument();
-        await browser.waitUntil(
-            async () => {
-                const url = await browser.getUrl();
-                return url.includes('.force.com/lightning') && !url.includes('frontdoor') && !url.includes('contentDoor');
-            },
-            { timeout: 60000, interval: 500, timeoutMsg: 'Did not reach a Lightning page within 60s after login' }
-        );
-        return domDocument;
-    }
 
     async logInSalesforce() {
         ['SF_ORG_URL', 'SF_USERNAME', 'SF_PASSWORD', 'SF_TOTP_SECRET'].forEach((varName) => {
@@ -141,7 +109,7 @@ class LoginPage extends BasePage {
                         const url = await browser.getUrl();
                         return url.includes('lightning') && !url.includes('login');
                     },
-                    { timeout: 10000, timeoutMsg: 'Did not redirect to Lightning' }
+                    { timeout: TIMEOUTS.PAGE_LOAD, timeoutMsg: 'Did not redirect to Lightning' }
                 );
 
                 console.log('✓ Login successful');
@@ -185,7 +153,7 @@ class LoginPage extends BasePage {
         // Enter OTP and save
         await this.fillInput(this.otpInput, process.env.TOTP_CODE);
         await this.clickElement(this.saveButton);
-        await browser.$(this.appNav).waitForDisplayed({timeout : 6000, timeoutMsg : "App navigation is not displayed"});
+        await browser.$(this.appNav).waitForDisplayed({timeout : TIMEOUTS.ELEMENT_VISIBLE, timeoutMsg : "App navigation is not displayed"});
         /*await browser.waitUntil(
                 async () => ( await $(this.totpError).isDisplayed(),
                 {
@@ -199,13 +167,13 @@ class LoginPage extends BasePage {
 
     async fillInput(selector, value) {
         const element = await browser.$(selector);
-        await element.waitForDisplayed({ timeout: 8000 });
+        await element.waitForDisplayed({ timeout: TIMEOUTS.ELEMENT_VISIBLE });
         await element.setValue(value);
     }
 
     async clickElement(selector) {
         const element = await browser.$(selector);
-        await element.waitForDisplayed({ timeout: 8000 });
+        await element.waitForDisplayed({ timeout: TIMEOUTS.ELEMENT_VISIBLE });
         await element.click();
     }
 
@@ -288,7 +256,7 @@ class LoginPage extends BasePage {
                     return false;
                 }
             },
-            { timeout: 25000, interval: 500, timeoutMsg: 'App Launcher search returned no items' }
+            { timeout: 25000, interval: WAIT_INTERVALS.ELEMENT, timeoutMsg: 'App Launcher search returned no items' }
         );
 
         // find the item whose first line matches exactly 'Sales' to avoid clicking
@@ -320,7 +288,7 @@ class LoginPage extends BasePage {
                     return false;
                 }
             },
-            { timeout: 40000, interval: 1000, timeoutMsg: 'App context did not switch to Sales within 30s' }
+            { timeout: TIMEOUTS.ONE_MINUTE, interval: WAIT_INTERVALS.STANDARD, timeoutMsg: 'App context did not switch to Sales within 30s' }
         );
     }
 

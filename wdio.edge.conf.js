@@ -29,13 +29,6 @@ export const config = {
       }
     ],
 
-
-    beforeScenario: async function(world, context) {
-      const instanceId = process.env.WDIO_WORKER_ID || '0';
-      console.log(`Running on instance: ${instanceId}`);
-    },
-
-
     onPrepare: async function (config, capabilities) {
       try {
         removeSync('./report');
