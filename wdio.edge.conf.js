@@ -1,6 +1,8 @@
 import { config as sharedConfig } from './wdio.shared.conf.js';
 import { UtamWdioService } from 'wdio-utam-service';
 import pkg from 'fs-extra';
+import path from "path";
+import logger from "./utils/logger.js";
 const { removeSync } = pkg;
 
 const EDGEDRIVER_PATH = '/Users/swathikomeravelli/Automation/UTAM/SF-BDD-JS-UTAM/drivers/edge/mac-v151/msedgedriver';
@@ -31,13 +33,18 @@ export const config = {
 
     onPrepare: async function (config, capabilities) {
       try {
-        removeSync('./report');
-        removeSync('./allure-results');
-        removeSync('./allure-reports');
-      } catch (e) {
-        console.warn('Report cleanup warning:', e.message);
-      }
+        const reportPath = path.resolve(process.cwd(), './report');
+        const allureResultsPath = path.resolve(process.cwd(), './allure-results');
+        const allureReportsPath = path.resolve(process.cwd(), './allure-report');
 
+        removeSync(reportPath);
+        removeSync(allureResultsPath);
+        removeSync(allureReportsPath);
+
+        logger.info('Cleanup complete');
+      } catch (e) {
+        logger.error('Report cleanup warning:', e.message);
+      }
       // Start local edgedriver server
       try {
         const { exec } = await import('child_process');

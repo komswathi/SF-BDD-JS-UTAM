@@ -7,6 +7,7 @@ import { UtamWdioService } from 'wdio-utam-service';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import cucumberJson from 'wdio-cucumberjs-json-reporter';
+import logger from "./utils/logger.js";
 
 dotenv.config();
 let __filename = fileURLToPath(import.meta.url);
@@ -95,11 +96,17 @@ export const config = {
 
   onPrepare: async function (config, capabilities) {
     try {
-      removeSync('./report');
-      removeSync('./allure-results');
-      removeSync('./allure-reports');
+      const reportPath = path.resolve(process.cwd(), './report');
+      const allureResultsPath = path.resolve(process.cwd(), './allure-results');
+      const allureReportsPath = path.resolve(process.cwd(), './allure-report');
+
+      removeSync(reportPath);
+      removeSync(allureResultsPath);
+      removeSync(allureReportsPath);
+
+      logger.info('Cleanup complete');
     } catch (e) {
-      console.warn('Report cleanup warning:', e.message);
+      logger.error('Report cleanup warning:', e.message);
     }
   },
   before: async function () {
@@ -120,8 +127,6 @@ export const config = {
   beforeScenario: async function(world, context) {
     const instanceId = process.env.WDIO_WORKER_ID || '0';
     console.log(`Running on instance: ${instanceId}`);
-
-    
   },
 
   afterScenario: async function (world, result, context) {

@@ -1,0 +1,26 @@
+{
+  "reporter": ["html", "text", "lcov"],
+  "sourceMap": true,
+  "instrument": true,
+  "all": true,
+  "include": [
+    "pageObjects/**/*.js",
+    "step-definitions/**/*.js",
+    "utils/**/*.js",
+    "context/**/*.js"
+  ],
+  "exclude": [
+    "node_modules/**",
+    "dist/**",
+    "report/**",
+    "allure-results/**",
+    "allure-reports/**",
+    "coverage/**",
+    "**/*.spec.js",
+    "wdio*.conf.js"
+  ],
+  "branches": 80,
+  "lines": 80,
+  "functions": 80,
+  "statements": 80
+}
