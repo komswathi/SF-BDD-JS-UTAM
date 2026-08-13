@@ -5,7 +5,7 @@ import path from "path";
 import logger from "./utils/logger.js";
 const { removeSync } = pkg;
 
-const EDGEDRIVER_PATH = '/Users/swathikomeravelli/Automation/UTAM/SF-BDD-JS-UTAM/drivers/edge/mac-v151/msedgedriver';
+const EDGEDRIVER_PATH = path.resolve(process.cwd(), './drivers/edge/mac-v151/msedgedriver');
 const WDIO_PORT = 9515;
 let driverServerInstance = null;
 

@@ -84,14 +84,17 @@ class LoginPage extends BasePage {
 
         // Fill login form
         await Promise.all([
-            this.fillInput(this.emailInput, atob(SF_USERNAME)),
-            this.fillInput(this.passwordInput, atob(SF_PASSWORD))
+
         ]);
+
+        await this.fillInput(this.emailInput, atob(SF_USERNAME));
+        await this.clickElement(this.submitButton);
+        await this.fillInput(this.passwordInput, atob(SF_PASSWORD));
         await this.clickElement(this.submitButton);
 
         // TOTP with retry
         let lastError;
-        for (let attempt = 1; attempt <= 6; attempt++) {
+        for (let attempt = 1; attempt <= 3; attempt++) {
             try {
                 console.log(`TOTP attempt ${attempt}/3`);
 
@@ -151,7 +154,7 @@ class LoginPage extends BasePage {
         ]);
         await this.clickElement(this.submitButton);
         // Enter OTP and save
-        await this.fillInput(this.otpInput, process.env.TOTP_CODE);
+        await this.fillInput(this.otpInput, token);
         await this.clickElement(this.saveButton);
         await browser.$(this.appNav).waitForDisplayed({timeout : TIMEOUTS.ELEMENT_VISIBLE, timeoutMsg : "App navigation is not displayed"});
         /*await browser.waitUntil(
@@ -193,7 +196,7 @@ class LoginPage extends BasePage {
                 }
             );
 
-            let accessToken = response.data.access_token;
+            accessToken = response.data.access_token;
             console.log('Auth token generated:', accessToken);
 
             // Store for later use

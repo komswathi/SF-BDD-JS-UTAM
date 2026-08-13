@@ -11,5 +11,5 @@ Before(function(scenario) {
 After(function(scenario) {
     logger.info(`✓ Scenario completed: ${scenario.result.status}`);
     scenarioContext.getScenarioContext().clear();
-    logger.debug('Scneario Context cleared');
+    logger.debug('Scenario Context cleared');
 });

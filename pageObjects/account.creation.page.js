@@ -21,19 +21,11 @@ const ACCOUNT_SECTIONS = {
 };
 
 const FIELD_TYPES = {
-    DROPDOWN: new Set(['RATING', 'TYP    DROPDOWN: new Set([\'RATING\', \'TYPE\', \'OWNERSHIP\', \'INDUSTRY\', \'BILLING_COUNTRY\', \'SHIPPING_COUNTRY\', \'CUSTOMER_PRIORITY\', \'SLA\', \'UPSELL_OPPORTUNITY\', \'ACTIVE\']),\nE', 'OWNERSHIP', 'INDUSTRY', 'BILLING_COUNTRY', 'SHIPPING_COUNTRY', 'CUSTOMER_PRIORITY', 'SLA', 'UPSELL_OPPORTUNITY', 'ACTIVE']),
+    DROPDOWN: new Set(['RATING', 'TYPE', 'OWNERSHIP', 'INDUSTRY', 'BILLING_COUNTRY', 'SHIPPING_COUNTRY', 'CUSTOMER_PRIORITY', 'SLA', 'UPSELL_OPPORTUNITY', 'ACTIVE']),
     BASE_INPUT: new Set(['ACCOUNT_NAME', 'ACCOUNT_NUMBER', 'ACCOUNT_SITE', 'TICKER_SYMBOL', 'ANNUAL_REVENUE', 'SIC_CODE']),
     INPUT: new Set(['PHONE', 'FAX', 'WEBSITE', 'EMPLOYEES', 'SLA_SERIAL_NUMBER', 'NUMBER_OF_LOCATIONS', 'BILLING_CITY', 'SHIPPING_CITY', 'BILLING_ZIP/POSTAL_CODE', 'SHIPPING_ZIP/POSTAL_CODE']),
     TEXTAREA: new Set(['BILLING_STREET', 'SHIPPING_STREET', 'DESCRIPTION']),
 };
-
-
-const dropdownFields = new Set(['RATING', 'TYPE', 'OWNERSHIP', 'INDUSTRY', 'BILLING_COUNTRY']);
-const baseInputFields = new Set(['ACCOUNT_NAME', 'ACCOUNT_NUMBER', 'ACCOUNT_SITE', 'TICKER_SYMBOL', 'ANNUAL_REVENUE', 'SIC_CODE']);
-const inputFields = new Set(['PHONE', 'FAX', 'WEBSITE', 'EMPLOYEES', 'SLA_SERIAL_NUMBER']);
-//const textAreaFields = new Set(['BILLING_STREET', 'SHIPPING_STREET', 'DESCRIPTION']);
-
-
 
 const addressData = {
     'Billing Country' : 'United Kingdom'
@@ -584,18 +576,6 @@ class AccountCreation extends BasePage {
         const rows = await dataTable.getRows();
         expect(rows.length).toEqual(1);
     }
-
-    async scrollUTAMElementIntoView(utamElement) {
-        try {
-            const element = await utamElement.getRoot();
-            await element.scrollToCenter();
-            await browser.pause(500);
-            console.log('Element scrolled into view');
-        } catch (e) {
-            console.warn('Failed to scroll element:', e.message);
-        }
-    }
-
 
 }
 
