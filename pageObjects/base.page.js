@@ -19,7 +19,7 @@ class BasePage extends Page {
     async getAppContextName() {
         const appNavAfterNav = await (await utam.load(DesktopLayoutContainer)).getAppNav();
         const appName = await (await appNavAfterNav.getAppName()).getText();
-        return appName
+        return appName;
     }
 }
 export default BasePage;

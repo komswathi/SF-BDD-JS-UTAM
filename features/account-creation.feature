@@ -6,8 +6,8 @@ Feature: Account Creation in Salesforce Sales App
 
   @account
   Scenario: Create account record with full account and address details
-#    When I open app launcher and choose "Sales"
-#    Then app context should display "Sales"
+    When I open app launcher and choose "Sales"
+    Then app context should display "Sales"
     When I navigate to "Accounts" tab
     When I verify accounts are sorted by recent
     When I create account with following details
