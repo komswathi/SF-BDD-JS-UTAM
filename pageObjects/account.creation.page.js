@@ -24,7 +24,7 @@ const FIELD_TYPES = {
     DROPDOWN: new Set(['RATING', 'TYPE', 'OWNERSHIP', 'INDUSTRY', 'BILLING_COUNTRY', 'SHIPPING_COUNTRY', 'CUSTOMER_PRIORITY', 'SLA', 'UPSELL_OPPORTUNITY', 'ACTIVE']),
     BASE_INPUT: new Set(['ACCOUNT_NAME', 'ACCOUNT_NUMBER', 'ACCOUNT_SITE', 'TICKER_SYMBOL', 'ANNUAL_REVENUE', 'SIC_CODE']),
     INPUT: new Set(['PHONE', 'FAX', 'WEBSITE', 'EMPLOYEES', 'SLA_SERIAL_NUMBER', 'NUMBER_OF_LOCATIONS', 'BILLING_CITY', 'SHIPPING_CITY', 'BILLING_ZIP/POSTAL_CODE', 'SHIPPING_ZIP/POSTAL_CODE']),
-    TEXTAREA: new Set(['BILLING_STREET', 'SHIPPING_STREET']),
+    TEXTAREA: new Set(['BILLING_STREET', 'SHIPPING_STREET', 'DESCRIPTION']),
 };
 
 
@@ -115,9 +115,13 @@ class AccountCreation extends BasePage {
 
     async fillAllFields(recordLayout, testData) {
         const sections = await recordLayout.getSections();
+        logger.info("Sections length - " + sections.length);
+        logger.info("Sections - " + sections[0] + " " + sections[1] + " " + sections[2]);
+
         for (const section of sections) {
             const sectionTitleElement = await section.getSectionTitle();
             const sectionTitle = await sectionTitleElement.getText();
+            logger.info("Section name - " + sectionTitle);
             const rows = await section.getRows();
             logger.debug(`Processing section: ${sectionTitle}`);
             for (const row of rows) {
@@ -134,7 +138,7 @@ class AccountCreation extends BasePage {
 
                         // Fill field based on type and section
                         logger.info('Field name - ' + fieldName);
-                        await this.fillField(item, fieldName, fieldValue, sectionTitle, normalizedFieldName);
+                        await this.fillField(item, fieldName, fieldValue, section, sectionTitle, normalizedFieldName);
                         logger.info(`${sectionTitle} > ${fieldName} = ${fieldValue}`);
 
                 }
@@ -142,21 +146,25 @@ class AccountCreation extends BasePage {
         }
     }
 
-    async fillField(item, fieldName, value, sectionTitle, normalizedFieldName) {
-        // Determine field type
+    async fillField(item, fieldName, value, section, sectionTitle, normalizedFieldName) {
         logger.info("FIELD value - " + normalizedFieldName);
+        logger.info("Section Title - " + sectionTitle);
+
         try {
-            if (FIELD_TYPES.DROPDOWN.has(normalizedFieldName)) {
+            if (sectionTitle === 'Address Information') {
+                // Address section fields (country, street, city, postal)
+                await this.fillAddressField(section, fieldName, value);
+                //await this.fillAddress(section,item, fieldName, value);
+
+            }
+            else if (FIELD_TYPES.DROPDOWN.has(normalizedFieldName)) {
                 logger.info("DROPDOWN value - " + fieldName.toUpperCase());
                 await this.selectDropdownValue(item, value);
             }
-            else if (FIELD_TYPES.TEXTAREA.has(fieldName)) {
+            else if (FIELD_TYPES.TEXTAREA.has(normalizedFieldName)) {
                 await this.fillTextArea(item, value);
             }
-            else if (sectionTitle === ACCOUNT_SECTIONS.ADDRESS_INFO) {
-                // Address section - handle special address components
-                await this.fillAddressField(item, fieldName, value);
-            }
+
             else {
                 // Regular text field
                 await this.fillTextField(item, value);
@@ -175,22 +183,66 @@ class AccountCreation extends BasePage {
     }
 
     /**
-     * Select dropdown value - handles all combobox interactions
+     * Select dropdown value - scroll and retry until success
      */
     async selectDropdownValue(item, value) {
-        const dropDownField = await item.getPicklist();
-        //await this.scrollUTAMElementIntoView(dropDownField);
-        const baseComboBoxField = await dropDownField.getBaseCombobox();
-        await baseComboBoxField.expand();
-        const options = await baseComboBoxField.getItems();
-        for (const option of options) {
-            const label = await option.getItemLabel();
-            if (label === value) {
-                await option.clickItem();
-                return;
+        try {
+            const dropDownField = await item.getPicklist();
+            const baseComboBoxField = await dropDownField.getBaseCombobox();
+
+            // Keep scrolling and retrying until expand succeeds
+            for (let attempt = 1; attempt <= 10; attempt++) {
+                try {
+                    logger.debug(`Dropdown expand attempt ${attempt}`);
+
+                    // Expand dropdown
+                    await baseComboBoxField.expand();
+                    await browser.pause(600);
+
+                    // Get options
+                    const options = await baseComboBoxField.getItems();
+                    if (!options || options.length === 0) {
+                        throw new Error('No options found');
+                    }
+
+                    // Find and click target option
+                    for (const option of options) {
+                        const label = await option.getItemLabel();
+                        if (label === value) {
+                            await option.clickItem();
+                            await browser.pause(400);
+                            logger.info(`✓ Selected dropdown: ${value}`);
+                            return;
+                        }
+                    }
+
+                    throw new Error(`Option not found: ${value}`);
+
+                } catch (error) {
+                    if (attempt >= 10) {
+                        throw error; // Final attempt failed
+                    }
+
+                    logger.debug(`Attempt ${attempt} failed, scrolling down...`);
+
+                    // Scroll down modal body
+                    await browser.execute(() => {
+                        const modal = document.querySelector('[role="dialog"]');
+                        if (modal) {
+                            const body = modal.querySelector('[class*="body"], .slds-modal__body');
+                            if (body) {
+                                body.scrollTop += 100; // Scroll down 100px
+                            }
+                        }
+                    });
+
+                    await browser.pause(400);
+                }
             }
+        } catch (error) {
+            logger.error(`Failed to select dropdown: ${value}`, { error: error.message });
+            throw error;
         }
-        throw new Error(`Dropdown option not found: ${value}`);
     }
 
 
@@ -208,29 +260,38 @@ class AccountCreation extends BasePage {
     /**
      * Fill address field - handles shadow DOM components
      */
-    async fillAddressField(item, fieldName, fieldValue) {
-        try {
-            const inputAddress = await item.getInputAddress();
-            const lightningInput = await inputAddress.getInputAddress();
+    async fillAddressField(section, fieldName, fieldValue) {
+        logger.info("In Address field");
+        const rows = await section.getRows();
+        for (const row of rows) {
+            const items = await row.getItems();
+            for (const item of items) {
+                try {
+                    const inputAddress = await item.getInputAddress();
+                    const lightningInput = await inputAddress.getInputAddress();
 
-            if (fieldName === 'Billing Country' || fieldName === 'Shipping Country') {
-                await this.fillCountryPicklist(lightningInput, fieldName, fieldValue);
+                    if (fieldName === 'Billing Country' || fieldName === 'Shipping Country') {
+                        await this.fillCountryPicklist(lightningInput, fieldName, fieldValue);
+                    }
+                    else if (fieldName === 'Billing Street' || fieldName === 'Shipping Street') {
+                        const streetField = await lightningInput.getStreetInput();
+                        await streetField.clearAndEnterText(fieldValue);
+                    }
+                    else if (fieldName === 'Billing City' || fieldName === 'Shipping City') {
+                        const cityField = await lightningInput.getCityInput();
+                        await cityField.setText(fieldValue);
+                    }
+                    else if (fieldName === 'Billing Zip/Postal Code' || fieldName === 'Shipping Zip/Postal Code') {
+                        const postalField = await lightningInput.getPostalCodeInput();
+                        await postalField.setText(fieldValue);
+                    }
+                } catch (error) {
+                    logger.warn(`Could not fill address field: ${fieldName}`, { error: error.message });
+                }
             }
-            else if (fieldName === 'Billing Street' || fieldName === 'Shipping Street') {
-                const streetField = await lightningInput.getStreetInput();
-                await streetField.clearAndEnterText(fieldValue);
-            }
-            else if (fieldName === 'Billing City' || fieldName === 'Shipping City') {
-                const cityField = await lightningInput.getCityInput();
-                await cityField.setText(fieldValue);
-            }
-            else if (fieldName === 'Billing Zip/Postal Code' || fieldName === 'Shipping Zip/Postal Code') {
-                const postalField = await lightningInput.getPostalCodeInput();
-                await postalField.setText(fieldValue);
-            }
-        } catch (error) {
-            logger.warn(`Could not fill address field: ${fieldName}`, { error: error.message });
         }
+
+
     }
 
     /**
@@ -327,13 +388,15 @@ class AccountCreation extends BasePage {
         }
     }
 
-    async fillTextArea(item, fieldKey, fieldValue) {
-        const inputAddress = await item.getInputAddress();
-        const lightningInput = await inputAddress.getInputAddress();
-        const textAreaField = await lightningInput.getStreetInput();
-        const fieldName = await textAreaField.getLabelText();
-        if(fieldName === fieldKey) {
-            await textAreaField.clearAndEnterText(fieldValue);
+    async fillTextArea(item, value) {
+        try {
+            // Get textarea input element
+            const textArea = await item.getRecordTextArea()
+                .then(w => w.getTextArea())
+                .catch(() => item.getTextArea());
+            await textArea.clearAndEnterText(value);
+        } catch (error) {
+            throw new Error(`Failed to fill textarea: ${error.message}`);
         }
     }
 
@@ -401,6 +464,29 @@ class AccountCreation extends BasePage {
     }
 
     async fillAddress(recordLayout, addressData) {
+        const section = await this.getSection(recordLayout, ACCOUNT_SECTIONS.ADDRESS_INFO);
+        const rows = await section.getRows();
+        for (const row of rows) {
+            const items = await row.getItems();
+            for (const item of items) {
+                for (const [fieldKey, fieldValue] of Object.entries(addressData)) {
+                    let value;
+                    if (fieldKey != null) {
+                        value = fieldKey.replaceAll(' ', '_').toUpperCase();
+                    }
+                    if (FIELD_TYPES.DROPDOWN.has(value)) {
+                        await this.fillCountryPicklist(item, fieldKey, addressData[fieldKey]);
+                    } else if (FIELD_TYPES.TEXTAREA.has(value)){
+                        await this.fillTextArea(item, fieldKey, addressData[fieldKey]);
+                    } else if (FIELD_TYPES.INPUT.has(value)){
+                        await this.fillInputField(item, fieldKey, addressData[fieldKey]);
+                    }
+                }
+            }
+        }
+    }
+
+    async fillAddress_Copy(recordLayout, addressData) {
         const section = await this.getSection(recordLayout, ACCOUNT_SECTIONS.ADDRESS_INFO);
         const rows = await section.getRows();
         for (const row of rows) {
