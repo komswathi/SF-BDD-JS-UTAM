@@ -354,31 +354,7 @@ class AccountCreation extends BasePage {
 
 
 
-    /**
-     * Fill country picklist (handles shadow DOM)
-     */
-    async fillCountryPicklist(item, fieldKey, countryValue) {
-        const inputAddress = await item.getInputAddress();
-        const lightningInput = await inputAddress.getInputAddress();
-        const dropDownField = await lightningInput.getCountryPicklist();
-        const comboBoxField = await dropDownField.getComboBox();
-        const fieldName = await comboBoxField.getLabelText();
-        if(fieldName === fieldKey) {
-            const baseComboBoxField = await comboBoxField.getBase();
-            await this.scrollUTAMElementIntoView(comboBoxField);
-            await comboBoxField.waitForVisible();
-            await baseComboBoxField.expand();
-            const items = await baseComboBoxField.getItems();
-            for (const item of items) {
-                const itemLabel = await item.getItemLabel();
-                //let value = fieldData[itemLabel];
-                if (itemLabel === countryValue) {
-                    await item.clickItem();
-                    break;
-                }
-            }
-        }
-    }
+
 
     async fillTextArea(item, value) {
         try {
@@ -406,6 +382,8 @@ class AccountCreation extends BasePage {
             case 'SHIPPING_ZIP/POSTAL_CODE' :
                 inputField = await lightningInput.getPostalCodeInput();
                 break;
+            default:
+                throw new Error(`Unknown field type: ${fieldKey}`);
         }
         const fieldName = await inputField.getLabelText();
         if(fieldName === fieldKey) {
@@ -425,34 +403,38 @@ class AccountCreation extends BasePage {
 
 
     async fillAddressInformation(recordLayout, addressData) {
-        const sections = await recordLayout.getSections();
-        let addressInformationSection;
-        for (const section of sections) {
-            const sectionTitle = await section.getSectionTitle();
-            if (sectionTitle === 'Address Information') {
-                addressInformationSection = await section;
-                break;
-            }
-            const rows = await addressInformationSection.getRows();
-            for (const row of rows) {
-                const items = await row.getItems();
-                for (const item of items) {
-                    const inputAddresses = await item.getInputAddress();
-                    for (const inputAddress of inputAddresses) {
-                        const lightningInputs = await inputAddress.getInputAddress();
-                        for (const lightningInput of lightningInputs) {
-                            const lightningInputs = await inputAddress.getInputAddress();
-                        }
+        const section = await this.getSection(recordLayout, 'Address Information');
+        const rows = await section.getRows();
+        for (const row of rows) {
+            const items = await row.getItems();
+            for (const item of items) {
+                const fieldName = await item.getLabelText();
+                const fieldValue = addressData[fieldName];
+                if (!fieldValue) continue;
 
+                const normalizedFieldName = fieldName.replaceAll(' ', '_').toUpperCase();
+                if (FIELD_TYPES.DROPDOWN.has(normalizedFieldName)) {
+                    const inputAddress = await item.getInputAddress();
+                    const lightningInput = await inputAddress.getInputAddress();
+                    await this.fillCountryPicklist(lightningInput, fieldName, fieldValue);
+                } else if (FIELD_TYPES.TEXTAREA.has(normalizedFieldName)) {
+                    const inputAddress = await item.getInputAddress();
+                    const lightningInput = await inputAddress.getInputAddress();
+                    const streetField = await lightningInput.getStreetInput();
+                    await streetField.clearAndEnterText(fieldValue);
+                } else if (FIELD_TYPES.INPUT.has(normalizedFieldName)) {
+                    const inputAddress = await item.getInputAddress();
+                    const lightningInput = await inputAddress.getInputAddress();
+                    if (fieldName === 'Billing City' || fieldName === 'Shipping City') {
+                        const cityField = await lightningInput.getCityInput();
+                        await cityField.setText(fieldValue);
+                    } else if (fieldName === 'Billing Zip/Postal Code' || fieldName === 'Shipping Zip/Postal Code') {
+                        const postalField = await lightningInput.getPostalCodeInput();
+                        await postalField.setText(fieldValue);
                     }
                 }
-
             }
-
         }
-        let addressInformation = await addressInformationSection.getRows().get(0);
-        let addressInformationItem = await addressInformation.getItems().get(0);
-        let inputAddress = await addressInformationItem.getInputAddress();
     }
 
     async fillAddress(recordLayout, addressData) {
@@ -469,30 +451,7 @@ class AccountCreation extends BasePage {
                     if (FIELD_TYPES.DROPDOWN.has(value)) {
                         await this.fillCountryPicklist(item, fieldKey, addressData[fieldKey]);
                     } else if (FIELD_TYPES.TEXTAREA.has(value)){
-                        await this.fillTextArea(item, fieldKey, addressData[fieldKey]);
-                    } else if (FIELD_TYPES.INPUT.has(value)){
-                        await this.fillInputField(item, fieldKey, addressData[fieldKey]);
-                    }
-                }
-            }
-        }
-    }
-
-    async fillAddress_Copy(recordLayout, addressData) {
-        const section = await this.getSection(recordLayout, ACCOUNT_SECTIONS.ADDRESS_INFO);
-        const rows = await section.getRows();
-        for (const row of rows) {
-            const items = await row.getItems();
-            for (const item of items) {
-                for (const [fieldKey, fieldValue] of Object.entries(addressData)) {
-                    let value;
-                    if (fieldKey != null) {
-                        value = fieldKey.replaceAll(' ', '_').toUpperCase();
-                    }
-                    if (FIELD_TYPES.DROPDOWN.has(value)) {
-                        await this.fillCountryPicklist(item, fieldKey, addressData[fieldKey]);
-                    } else if (FIELD_TYPES.TEXTAREA.has(value)){
-                        await this.fillTextArea(item, fieldKey, addressData[fieldKey]);
+                        await this.fillTextArea(item, addressData[fieldKey]);
                     } else if (FIELD_TYPES.INPUT.has(value)){
                         await this.fillInputField(item, fieldKey, addressData[fieldKey]);
                     }

@@ -10,7 +10,7 @@ import {
 } from './index.js';
 import {TIMEOUTS, WAIT_INTERVALS} from "../utils/salesforceConstants.js";
 
-const SESSION_TIMEOUT = 2 * 60 * 60 * 100;
+const SESSION_TIMEOUT = 2 * 60 * 60 * 1000;
 
 class LoginPage extends BasePage {
     get emailInput() { return ("input[type='email']")}
@@ -81,11 +81,6 @@ class LoginPage extends BasePage {
         }
 
         await browser.navigateTo(SF_ORG_URL);
-
-        // Fill login form
-        await Promise.all([
-
-        ]);
 
         await this.fillInput(this.emailInput, atob(SF_USERNAME));
         await this.clickElement(this.submitButton);
