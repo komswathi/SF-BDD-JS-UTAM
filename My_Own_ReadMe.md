@@ -114,3 +114,13 @@ npm run test:ui:edge -- --cucumberOpts.tagExpression='@lead'
 
 **npm run test:ui:chrome -- --cucumberOpts.tagExpression='@regression'**
 
+
+# DO NOT CHECK THIS FILE IN WITH PERSONAL INFORMATION SAVED
+SALESFORCE_LOGIN_URL=https://orgfarm-caf1480b47-dev-ed.develop.my.salesforce.com/secur/frontdoor.jsp?otp=00Dg500000CASgr%21AQEAQN65CNbv_ZOK82Oj2.rfoajOlIQBbIHPy38_3VLveVWWEPjIo.aVGJ_xhml10zUymTl.Grn7QcN7E0.Qter4fTY_cwbg&startURL=%2Flightning&cshc=5000008DKxB500000CASgr
+SF_USERNAME=a29tc3dhdGhpLmNkYmZhZWM2YmZmNEBhZ2VudGZvcmNlLmNvbQ==
+SF_PASSWORD=SmFhbnNoaW11XzE0Mw==
+SF_TOTP_SECRET=S0paR0hNMkdWN01DSUpTNVVFWUVQRldBNVVEUUtJNzQ=
+SF_ORG_URL=https://orgfarm-caf1480b47-dev-ed.develop.lightning.force.com
+DOCKER_ENV=true
+HEADLESS=false
+BROWSER=CHROME
