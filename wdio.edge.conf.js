@@ -97,15 +97,6 @@ export const config = {
       } catch (e) {
         console.log('Report generation warning:', e.message);
       }
-    },
-    services: [
-      [
-        UtamWdioService,
-        {
-          implicitTimeout: 0,
-          injectionConfigs: ['salesforce-pageobjects/ui-global-components.config.json']
-        }
-      ]
-    ]
+    }
   }
 }
