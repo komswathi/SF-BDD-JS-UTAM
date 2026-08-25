@@ -29,4 +29,4 @@ function findFirstShadowBoundary(startSelector) {
   return null;
 }
 
-findFirstShadowBoundary('.oneRecordActionWrapper');
+findFirstShadowBoundary('records-record-layout-row');
