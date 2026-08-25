@@ -46,3 +46,7 @@ $RECYCLE.BIN/
 
 # UTAM
 utam-lint.sarif
+*.jpeg
+package-lock.json
+.nycrc.json
+.nyc_output
