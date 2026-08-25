@@ -1,0 +1,30 @@
+function listShadowStatus(root = document.body) {
+  const seen = new Set();
+  const rows = [];
+
+  function walk(node) {
+    if (node.nodeType !== 1) return;
+
+    const tag = node.tagName.toLowerCase();
+    if (tag.includes('-') && !seen.has(node)) {
+      seen.add(node);
+      rows.push({
+        tag,
+        hasShadowRoot: !!node.shadowRoot,
+        childCountInShadow: node.shadowRoot ? node.shadowRoot.children.length : 0,
+        childCountLightDom: node.children.length
+      });
+    }
+
+    if (node.shadowRoot) {
+      for (const child of node.shadowRoot.children) walk(child);
+    }
+    for (const child of node.children) walk(child);
+  }
+
+  walk(root);
+  console.table(rows);
+  return rows;
+}
+
+listShadowStatus();

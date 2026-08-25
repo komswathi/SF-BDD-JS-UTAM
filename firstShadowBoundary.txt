@@ -1,0 +1,32 @@
+function findFirstShadowBoundary(startSelector) {
+  const start = typeof startSelector === 'string'
+    ? document.querySelector(startSelector)
+    : startSelector;
+
+  if (!start) {
+    console.log(`Could not find starting element: "${startSelector}"`);
+    return null;
+  }
+
+  const queue = [{ node: start, path: [start.tagName.toLowerCase()] }];
+
+  while (queue.length) {
+    const { node, path } = queue.shift();
+
+    if (node.shadowRoot) {
+      console.log(`First real shadow boundary: <${node.tagName.toLowerCase()}>`);
+      console.log(`Path from start (all plain light DOM): ${path.join(' > ')}`);
+      console.log('Element:', node);
+      return node;
+    }
+
+    for (const child of node.children) {
+      queue.push({ node: child, path: path.concat(child.tagName.toLowerCase()) });
+    }
+  }
+
+  console.log('No shadow root found anywhere below the starting element (all plain light DOM).');
+  return null;
+}
+
+findFirstShadowBoundary('.oneRecordActionWrapper');
