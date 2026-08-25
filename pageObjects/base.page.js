@@ -14,6 +14,7 @@ class BasePage extends Page {
         const tab = await appNavBar.getNavItem(tabName);
         let name = tabName.slice(0, -1);
         await tab.clickAndWaitForUrl(`lightning/o/${name}`);
+        await tab.waitForVisible();
     }
 
     async getAppContextName() {

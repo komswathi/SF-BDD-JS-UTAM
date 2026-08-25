@@ -30,7 +30,7 @@
     "test:coverage": "c8 --reporter=html npm run test:ui:edge",
     "test:chrome": "NODE_OPTIONS=\"--no-experimental-require-module\" wdio run wdio.chrome.conf.js",
     "debug:edge:account": "node --enable-source-maps --inspect-brk ./node_modules/@wdio/cli/bin/wdio.js run wdio.conf.edge.js -- --cucumberOpts.tagExpression='@account'",
-    "test:ui:compile": "utam -c utam.config.js",
+    "test:ui:compile": "utam -c utam.config.cjs",
     "test:ui:generate:login": "node scripts/generate-login-url.js",
     "prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\" --check",
     "prettier:verify": "prettier --list-different \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",

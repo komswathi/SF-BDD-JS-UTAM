@@ -103,7 +103,7 @@ msedge --version
 
 WDIO_SKIP_DRIVER_UPDATE=true npm run test:ui:edge 
 
-npm run test:ui:edge -- --cucumberOpts.tagExpression='@lead'
+npm run test:ui:chrome -- --cucumberOpts.tagExpression='@case'
 
 
 **nvm use**

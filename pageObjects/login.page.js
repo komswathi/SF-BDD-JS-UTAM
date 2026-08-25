@@ -88,7 +88,7 @@ class LoginPage extends BasePage {
         await this.clickElement(this.submitButton);
 
         // TOTP with retry
-        let lastError;
+        /*let lastError;
         for (let attempt = 1; attempt <= 3; attempt++) {
             try {
                 console.log(`TOTP attempt ${attempt}/3`);
@@ -123,7 +123,7 @@ class LoginPage extends BasePage {
             }
         }
 
-        throw new Error(`Login failed after 3 TOTP attempts: ${lastError.message}`);
+        throw new Error(`Login failed after 3 TOTP attempts: ${lastError.message}`);*/
     }
 
 

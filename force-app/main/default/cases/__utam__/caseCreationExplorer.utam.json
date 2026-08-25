@@ -1,0 +1,477 @@
+{
+  "description": "Salesforce Case Creation Modal Form - hierarchy from the Aura action wrapper down through the LWC record layout, using salesforce-pageobjects' own recordLayoutItem type (getPicklist/getTextInput/getLookup/recordTextArea) to reliably reach each field regardless of its specific internal wrapper chain, identified by field-label",
+  "root": true,
+  "selector": {
+    "css": ".oneRecordActionWrapper"
+  },
+  "elements": [
+    {
+      "name": "lwcDetailPanel",
+      "selector": {
+        "css": "records-lwc-detail-panel"
+      },
+      "shadow": {
+        "elements": [
+          {
+            "name": "baseRecordForm",
+            "selector": {
+              "css": "records-base-record-form"
+            },
+            "shadow": {
+              "elements": [
+                {
+                  "name": "recordLayout",
+                  "public": true,
+                  "selector": {
+                    "css": "records-lwc-record-layout"
+                  },
+                  "shadow": {
+                    "elements": [
+                      {
+                        "name": "generatedLayout",
+                        "selector": {
+                          "css": "[class*=forcegenerated-record-layout]"
+                        },
+                        "shadow": {
+                          "elements": [
+                            {
+                              "name": "sections",
+                              "public": true,
+                              "selector": {
+                                "css": "records-record-layout-section",
+                                "returnAll": true
+                              },
+                              "elements": [
+                                {
+                                  "name": "rows",
+                                  "public": true,
+                                  "selector": {
+                                    "css": "records-record-layout-row",
+                                    "returnAll": true
+                                  },
+                                  "elements": [
+                                    {
+                                      "name": "items",
+                                      "type": "utam-records/pageObjects/recordLayoutItem",
+                                      "public": true,
+                                      "selector": {
+                                        "css": "records-record-layout-item",
+                                        "returnAll": true
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "itemByLabel",
+                              "type": "utam-records/pageObjects/recordLayoutItem",
+                              "public": true,
+                              "nullable": true,
+                              "selector": {
+                                "css": "records-record-layout-item[field-label='%s']",
+                                "args": [
+                                  {
+                                    "name": "label",
+                                    "type": "string"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "name": "statusItem",
+                              "selector": {
+                                "css": "records-record-layout-item[field-label='Status']"
+                              },
+                              "elements": [
+                                {
+                                  "name": "statusWrapper",
+                                  "selector": {
+                                    "css": "support-lwc-input-case-status"
+                                  },
+                                  "shadow": {
+                                    "elements": [
+                                      {
+                                        "name": "statusPicklistWrapper",
+                                        "selector": {
+                                          "css": "records-record-picklist"
+                                        },
+                                        "shadow": {
+                                          "elements": [
+                                            {
+                                              "name": "statusFormPicklist",
+                                              "selector": {
+                                                "css": "records-form-picklist"
+                                              },
+                                              "shadow": {
+                                                "elements": [
+                                                  {
+                                                    "name": "statusLightningPicklist",
+                                                    "type": "utam-lightning/pageObjects/picklist",
+                                                    "public": true,
+                                                    "selector": {
+                                                      "css": "lightning-picklist"
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "formFooter",
+                  "public": true,
+                  "selector": {
+                    "css": "records-form-footer"
+                  },
+                  "shadow": {
+                    "elements": [
+                      {
+                        "name": "sendNotificationCheckbox",
+                        "type": "utam-lightning/pageObjects/input",
+                        "public": true,
+                        "nullable": true,
+                        "selector": {
+                          "css": "lightning-input[data-option-name='triggerOtherEmail']"
+                        }
+                      },
+                      {
+                        "name": "cancelButton",
+                        "type": "utam-lightning/pageObjects/button",
+                        "public": true,
+                        "selector": {
+                          "css": "lightning-button button[name='CancelEdit']"
+                        }
+                      },
+                      {
+                        "name": "saveAndNewButton",
+                        "type": "utam-lightning/pageObjects/button",
+                        "public": true,
+                        "selector": {
+                          "css": "lightning-button button[name='SaveAndNew']"
+                        }
+                      },
+                      {
+                        "name": "saveButton",
+                        "type": "utam-lightning/pageObjects/button",
+                        "public": true,
+                        "selector": {
+                          "css": "lightning-button button[name='SaveEdit']"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "getLookupField",
+      "description": "Get the lookup object for a field identified by its visible field-label, for direct step-by-step interaction (type, wait for suggestions, then select by index) from calling code - useful when suggestion labels are not predictable (e.g. auto-generated test data with unique suffixes)",
+      "compose": [
+        {
+          "element": "itemByLabel",
+          "args": [
+            {
+              "name": "fieldLabel",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "chain": true,
+          "apply": "getLookup",
+          "returnType": "utam-lightning/pageObjects/lookup"
+        }
+      ]
+    },
+    {
+      "name": "setStatus",
+      "description": "Set case Status specifically - this field uses a special support-lwc-input-case-status wrapper (for status-transition validation) that the generic fillDropdownField path doesn't account for",
+      "compose": [
+        {
+          "element": "statusLightningPicklist"
+        },
+        {
+          "chain": true,
+          "apply": "getBaseCombobox",
+          "returnType": "utam-lightning/pageObjects/baseCombobox"
+        },
+        {
+          "chain": true,
+          "apply": "expand"
+        },
+        {
+          "element": "statusLightningPicklist"
+        },
+        {
+          "chain": true,
+          "apply": "getBaseCombobox",
+          "returnType": "utam-lightning/pageObjects/baseCombobox"
+        },
+        {
+          "chain": true,
+          "apply": "pickItemByLabel",
+          "args": [
+            {
+              "name": "value",
+              "type": "string"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fillDropdownField",
+      "description": "Open a picklist field identified by its visible field-label and select the option matching value",
+      "compose": [
+        {
+          "element": "itemByLabel",
+          "args": [
+            {
+              "name": "fieldLabel",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "chain": true,
+          "apply": "getPicklist",
+          "returnType": "utam-lightning/pageObjects/picklist"
+        },
+        {
+          "chain": true,
+          "apply": "getBaseCombobox",
+          "returnType": "utam-lightning/pageObjects/baseCombobox"
+        },
+        {
+          "chain": true,
+          "apply": "expand"
+        },
+        {
+          "element": "itemByLabel",
+          "args": [
+            {
+              "name": "fieldLabelReselect",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "chain": true,
+          "apply": "getPicklist",
+          "returnType": "utam-lightning/pageObjects/picklist"
+        },
+        {
+          "chain": true,
+          "apply": "getBaseCombobox",
+          "returnType": "utam-lightning/pageObjects/baseCombobox"
+        },
+        {
+          "chain": true,
+          "apply": "pickItemByLabel",
+          "args": [
+            {
+              "name": "value",
+              "type": "string"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fillTextField",
+      "description": "Set text on an input field identified by its visible field-label. Uses the item's own direct 'input' element (lightning-input) rather than getTextInput(), since some fields (e.g. Web Email) slot lightning-input directly while others wrap it in records-record-layout-base-input - the direct 'input' element works for both cases.",
+      "compose": [
+        {
+          "element": "itemByLabel",
+          "args": [
+            {
+              "name": "fieldLabel",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "chain": true,
+          "element": "input",
+          "returnType": "utam-lightning/pageObjects/input"
+        },
+        {
+          "chain": true,
+          "apply": "setText",
+          "args": [
+            {
+              "name": "value",
+              "type": "string"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fillTextAreaField",
+      "description": "Set text on a textarea field identified by its visible field-label",
+      "compose": [
+        {
+          "element": "itemByLabel",
+          "args": [
+            {
+              "name": "fieldLabel",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "chain": true,
+          "element": "recordTextArea",
+          "returnType": "utam-records/pageObjects/recordLayoutTextArea"
+        },
+        {
+          "chain": true,
+          "element": "textArea",
+          "returnType": "utam-lightning/pageObjects/textarea"
+        },
+        {
+          "chain": true,
+          "apply": "clearAndEnterText",
+          "args": [
+            {
+              "name": "value",
+              "type": "string"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fillLookupField",
+      "description": "Type into a lookup field identified by its visible field-label and select the matching suggestion",
+      "compose": [
+        {
+          "element": "itemByLabel",
+          "args": [
+            {
+              "name": "fieldLabel",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "chain": true,
+          "apply": "getLookup",
+          "returnType": "utam-lightning/pageObjects/lookup"
+        },
+        {
+          "chain": true,
+          "apply": "type",
+          "args": [
+            {
+              "name": "value",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "element": "itemByLabel",
+          "args": [
+            {
+              "name": "fieldLabelWait",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "chain": true,
+          "apply": "getLookup",
+          "returnType": "utam-lightning/pageObjects/lookup"
+        },
+        {
+          "chain": true,
+          "apply": "waitForSuggestions"
+        },
+        {
+          "element": "itemByLabel",
+          "args": [
+            {
+              "name": "fieldLabelReselect",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "chain": true,
+          "apply": "getLookup",
+          "returnType": "utam-lightning/pageObjects/lookup"
+        },
+        {
+          "chain": true,
+          "apply": "selectRecordSuggestionByLabel",
+          "args": [
+            {
+              "name": "selectValue",
+              "type": "string"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "toggleNotificationEmail",
+      "description": "Toggle send notification email checkbox",
+      "compose": [
+        {
+          "element": "sendNotificationCheckbox",
+          "apply": "toggleCheckbox"
+        }
+      ]
+    },
+    {
+      "name": "submitCase",
+      "description": "Submit case creation form by clicking Save button",
+      "compose": [
+        {
+          "element": "saveButton",
+          "apply": "click"
+        }
+      ]
+    },
+    {
+      "name": "submitAndCreateNew",
+      "description": "Save current case and immediately open form for new case",
+      "compose": [
+        {
+          "element": "saveAndNewButton",
+          "apply": "click"
+        }
+      ]
+    },
+    {
+      "name": "cancelCaseCreation",
+      "description": "Cancel case creation and close modal",
+      "compose": [
+        {
+          "element": "cancelButton",
+          "apply": "click"
+        }
+      ]
+    }
+  ]
+}

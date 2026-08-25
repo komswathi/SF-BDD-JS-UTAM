@@ -88,16 +88,16 @@ class AccountCreation extends BasePage {
 
 
 
-    async createAccount(data) {
+    async createCase(data) {
         try {
-            logger.info('Starting account creation...');
+            logger.info('Starting case creation...');
             await this.openNewAccountModal();
             const recordLayout = await this.getRecordLayout();
             await this.fillAllFields(recordLayout, data);
             //await this.fillAccountInformation(recordLayout, testData.accountData);
             //await this.fillAddress(recordLayout, testData.addressData);
             await  this.saveForm();
-            logger.info('Account created successfully');
+            logger.info('case created successfully');
 
         } catch (error) {
             logger.error('Failed to create account', { error: error.message });
