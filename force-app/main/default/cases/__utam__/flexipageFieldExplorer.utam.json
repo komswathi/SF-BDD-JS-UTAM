@@ -1,0 +1,66 @@
+{
+  "description": "Traverses the flexipage rendering family (record detail/view pages) from the Aura action wrapper down to individual record_flexipage-record-field elements: .oneRecordActionWrapper -> flexipage-record-home-single-col-no-header-template-desktop2 -> flexipage-component2 -> flexipage-field-section2 -> record_flexipage-record-field. Uses predefined salesforce-pageobjects types (utam-flexipage/, utam-record-flexipage/) matching the tags shown in the DOM screenshot. SHADOW STATUS FOR THESE HOPS IS UNVERIFIED - run traceHierarchy() (see memory: shadow-dom-diagnostics) against the live page before trusting this compiles+works; plain 'elements' is used below as a starting guess only, matching how .actionBody's own children are declared in recordActionWrapper.utam.json.",
+  "root": true,
+  "selector": {
+    "css": ".oneRecordActionWrapper"
+  },
+  "elements": [
+    {
+      "name": "actionBody",
+      "selector": {
+        "css": ".actionBody"
+      },
+      "elements": [
+        {
+          "name": "recordHome",
+          "type": "utam-flexipage/pageObjects/recordHomeSingleColNoHeaderTemplateDesktop2",
+          "public": true,
+          "selector": {
+            "css": "flexipage-record-home-single-col-no-header-template-desktop2"
+          }
+        },
+        {
+          "name": "components",
+          "type": "utam-flexipage/pageObjects/component2",
+          "public": true,
+          "selector": {
+            "css": "flexipage-component2",
+            "returnAll": true
+          }
+        },
+        {
+          "name": "fieldSections",
+          "type": "utam-flexipage/pageObjects/fieldSection2",
+          "public": true,
+          "selector": {
+            "css": "flexipage-field-section2",
+            "returnAll": true
+          }
+        },
+        {
+          "name": "recordFields",
+          "type": "utam-record-flexipage/pageObjects/recordField",
+          "public": true,
+          "selector": {
+            "css": "record_flexipage-record-field",
+            "returnAll": true
+          }
+        }
+      ]
+    }
+  ],
+  "methods": [
+    {
+      "name": "getFieldLabels",
+      "description": "Returns the visible label text of every record_flexipage-record-field on the page - use this first to confirm field-label matching works before building a fillField-by-label method, and to see the exact label text to match against (getLabelText() may include trailing required-asterisk markup - verify).",
+      "compose": [
+        {
+          "element": "recordFields",
+          "apply": "getLabelText",
+          "returnAll": true,
+          "returnType": "string"
+        }
+      ]
+    }
+  ]
+}
