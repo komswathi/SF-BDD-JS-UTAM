@@ -245,6 +245,36 @@
       ]
     },
     {
+      "name": "fillDateField",
+      "description": "Set a date field identified by its visible field-label, using the predefined utam-lightning/pageObjects/datepicker type's setDateText method. Expects the org's configured date format (commonly DD/MM/YYYY or MM/DD/YYYY - check the field's format hint in the UI).",
+      "compose": [
+        {
+          "element": "itemByLabel",
+          "args": [
+            {
+              "name": "fieldLabel",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "chain": true,
+          "apply": "getDatepicker",
+          "returnType": "utam-lightning/pageObjects/datepicker"
+        },
+        {
+          "chain": true,
+          "apply": "setDateText",
+          "args": [
+            {
+              "name": "value",
+              "type": "string"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "fillTextAreaField",
       "description": "Set text on a textarea field identified by its visible field-label",
       "compose": [
