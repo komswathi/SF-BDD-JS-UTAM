@@ -2,6 +2,7 @@ import logger from '../utils/logger.js';
 import BasePage from "./base.page.js";
 import scenarioContext from '../context/scenario_context.js';
 import CaseCreationExplorer from './caseCreationExplorer.mjs';
+import FlexipageFieldExplorer from './flexipageFieldExplorer.mjs';
 import {retryAction} from "../utils/waiter.js";
 import {
     AppLauncherMenu,
@@ -65,6 +66,44 @@ class CaseCreation extends BasePage {
             logger.info('Case created successfully');
         } catch (error) {
             logger.error('Failed to create case', { error: error.message });
+            throw error;
+        }
+    }
+
+    /**
+     * Alternative entry point that loads the New Case modal via the flexipage component
+     * family (flexipage-record-home-single-col-no-header-template-desktop2 -> flexipage-component2
+     * -> flexipage-field-section2 -> record_flexipage-record-field) instead of the records-*
+     * family CaseCreationExplorer uses. Currently a discovery step: opens the modal, loads every
+     * record_flexipage-record-field present, and logs each field's visible label via the
+     * predefined getLabelText() method - use this to confirm live which labels/order actually
+     * come back before wiring up value-filling on top of it, the same way getFieldLabels() was
+     * meant to be used from flexipageFieldExplorer.utam.json.
+     *
+     * NOTE: the shadow-vs-plain traversal in flexipageFieldExplorer.utam.json is still
+     * unverified against a live page (see memory: shadow-dom-diagnostics) - if this throws a
+     * "Can't find element ... inside its scope element/shadow root" error, that pinpoints
+     * exactly which hop needs "shadow" flipped to "elements" or vice versa.
+     */
+    async createCaseUsingFlexi() {
+        try {
+            logger.info('Starting case creation via flexipage field explorer...');
+            await this.openNewAccountModal();
+
+            const explorer = await utam.load(FlexipageFieldExplorer);
+            const recordFields = await explorer.getRecordFields();
+            logger.info(`Found ${recordFields.length} record_flexipage-record-field element(s)`);
+
+            const labels = [];
+            for (const field of recordFields) {
+                const label = await field.getLabelText();
+                labels.push(label);
+                logger.info(`Field label: "${label}"`);
+            }
+
+            return labels;
+        } catch (error) {
+            logger.error('Failed to load fields via flexipage explorer', { error: error.message });
             throw error;
         }
     }
