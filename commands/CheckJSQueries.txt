@@ -20,3 +20,26 @@ const firstSection = deepQueryAll('flexipage-field-section2')[0];
 deepQueryAll('record_flexipage-record-field', firstSection.shadowRoot || firstSection).length
 
 deepQueryAll('record_flexipage-record-field', firstSection).length
+
+
+
+function deepQueryAll(selector, root = document) {
+  let results = [...root.querySelectorAll(selector)];
+  root.querySelectorAll('*').forEach(el => {
+    if (el.shadowRoot) results = results.concat(deepQueryAll(selector, el.shadowRoot));
+  });
+  return results;
+}
+
+const firstSection = deepQueryAll('flexipage-field-section2')[0];
+const fields = deepQueryAll('record_flexipage-record-field', firstSection.shadowRoot || firstSection);
+
+fields.forEach((f, i) => {
+  const apiNameDiv = f.querySelector('div[data-target-selection-name]');
+  console.log(
+    i,
+    apiNameDiv ? apiNameDiv.getAttribute('data-target-selection-name') : '(no api name)',
+    '|',
+    f.innerText.trim().split('\n')[0]
+  );
+});
