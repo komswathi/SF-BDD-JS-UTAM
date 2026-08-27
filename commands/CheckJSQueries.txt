@@ -8,3 +8,15 @@ function deepQueryAll(selector, root = document) {
 deepQueryAll('record_flexipage-record-field').length   // whole page total
 
 
+function deepQueryAll(selector, root = document) {
+  let results = [...root.querySelectorAll(selector)];
+  root.querySelectorAll('*').forEach(el => {
+    if (el.shadowRoot) results = results.concat(deepQueryAll(selector, el.shadowRoot));
+  });
+  return results;
+}
+
+const firstSection = deepQueryAll('flexipage-field-section2')[0];
+deepQueryAll('record_flexipage-record-field', firstSection.shadowRoot || firstSection).length
+
+deepQueryAll('record_flexipage-record-field', firstSection).length
