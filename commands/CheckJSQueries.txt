@@ -43,3 +43,30 @@ fields.forEach((f, i) => {
     f.innerText.trim().split('\n')[0]
   );
 });
+
+
+
+
+async getFieldsFromSection(section, dataFieldId) {
+    const rootElement = await section.getRootElement();
+
+    // real column tag, not the wildcard content/getContent() - avoids the over/under-match
+    const columnElements = await rootElement.findElements(
+        By.css("[slot='columns'] flexipage-column2")
+    );
+
+    let allFields = [];
+    for (const columnElement of columnElements) {
+        // filter by data-field-id directly in the selector, not after casting every field -
+        // only elements matching this specific id get queried/wrapped at all
+        const fieldElements = await columnElement.findElements(
+            By.css(`flexipage-field[data-field-id='${dataFieldId}']`)
+        );
+        const fields = await Promise.all(
+            fieldElements.map(el => createInstance(Field, field.driver, el))
+        );
+        allFields = allFields.concat(fields);
+    }
+
+    return allFields;
+}
