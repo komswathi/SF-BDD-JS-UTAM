@@ -70,3 +70,37 @@ async getFieldsFromSection(section, dataFieldId) {
 
     return allFields;
 }
+
+async getsFieldsAcrossSections(sections, fieldMappingV2) {
+    const allFields = new Map();
+    for (const section of sections) {
+        const sectionFields = await this.getFieldsFromSection(section, fieldMappingV2);
+        for (const [fieldName, field] of sectionFields) {
+            allFields.set(fieldName, field);
+        }
+    }
+    return allFields;
+}
+
+async getFieldsFromSection(section, fieldMappingV2) {
+    const rootElement = await section.getRootElement();
+    const columnElements = await rootElement.findElements(
+        By.css("flexipage-column2[slot='columns']")
+    );
+
+    const allFields = new Map();
+    for (const columnElement of columnElements) {
+        for (const [fieldName, fieldId] of Object.entries(fieldMappingV2)) {
+            // findElements (plural) returns [] instead of throwing when this column
+            // doesn't contain this particular field - most won't, per column
+            const fieldElements = await columnElement.findElements(
+                By.css(`flexipage-field[data-field-id='${fieldId}']`)
+            );
+            if (fieldElements.length === 0) continue;
+
+            const field = await createInstance(Field, section.driver, fieldElements[0]);
+            allFields.set(fieldName, field);
+        }
+    }
+    return allFields;
+}
