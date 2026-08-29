@@ -104,3 +104,22 @@ async getFieldsFromSection(section, fieldMappingV2) {
     }
     return allFields;
 }
+
+async fillLookupFieldV2(field, fieldValue) {
+    const rootElement = await field.getRootElement();
+
+    const baseComboboxElement = await retryAction(async () => {
+        return await rootElement.findElement(
+            By.css('lightning-lookup lightning-lookup-desktop lightning-grouped-combobox lightning-base-combobox')
+        );
+    }, 10, 500);
+
+    const baseCombobox = await createInstance(BaseCombobox, field.driver, baseComboboxElement);
+    await baseCombobox.setTriggerText(fieldValue);
+    await baseCombobox.expand();
+    await baseCombobox.waitForItemsToLoad();
+
+    const items = await baseCombobox.getItems();
+    const target = items.length > 1 ? items[1] : items[0];
+    await target.clickItem();
+}
