@@ -38,12 +38,69 @@
           }
         },
         {
+          "name": "fieldSectionByIndex",
+          "public": true,
+          "nullable": true,
+          "description": "Selects one flexipage-field-section2 by its 1-based position among sections (:nth-of-type is 1-based) so its record fields can be queried relative to it via a real CSS parent-child selector, instead of relying on getContent(RecordField) which does not scope to the section it's called on - confirmed live: it kept returning the page's total field count (24, then 36) rather than one section's subset.",
+          "selector": {
+            "css": "flexipage-field-section2:nth-of-type(%d)",
+            "args": [
+              {
+                "name": "sectionIndex",
+                "type": "number"
+              }
+            ]
+          },
+          "elements": [
+            {
+              "name": "sectionRecordFields",
+              "type": "utam-record-flexipage/pageObjects/recordField",
+              "public": true,
+              "selector": {
+                "css": "record_flexipage-record-field",
+                "returnAll": true
+              }
+            }
+          ]
+        },
+        {
           "name": "recordFields",
           "type": "utam-record-flexipage/pageObjects/recordField",
           "public": true,
           "selector": {
             "css": "record_flexipage-record-field",
             "returnAll": true
+          }
+        },
+        {
+          "name": "fieldByApiName",
+          "public": true,
+          "nullable": true,
+          "description": "Finds a field by its data-target-selection-name attribute (e.g. 'sfdc:RecordField.Case.Origin' for Case Channel) - confirmed from real captured markup to sit on record_flexipage-record-field's immediate child div, NOT on the field's own root, so it can't be reached via the predefined recordField type's getAttribute(). This is our own element, not part of the predefined library.",
+          "selector": {
+            "css": "record_flexipage-record-field div[data-target-selection-name='%s']",
+            "args": [
+              {
+                "name": "apiName",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "picklistByApiName",
+          "type": "utam-records/pageObjects/recordPicklist",
+          "public": true,
+          "nullable": true,
+          "description": "Combines fieldByApiName's scoping selector with the slotted records-record-picklist selector in one shot (confirmed from real markup: the slotted content for a dropdown field is records-record-picklist, not lightning-combobox directly - reuses the same predefined type recordLayoutItem.getPicklist() uses internally). One typed element avoids chaining through an untyped intermediate, which UTAM's compose chain requires a custom type for.",
+          "selector": {
+            "css": "record_flexipage-record-field div[data-target-selection-name='%s'] [slot='input'] records-record-picklist",
+            "args": [
+              {
+                "name": "apiName",
+                "type": "string"
+              }
+            ]
           }
         }
       ]
@@ -59,6 +116,64 @@
           "apply": "getLabelText",
           "returnAll": true,
           "returnType": "string"
+        }
+      ]
+    },
+    {
+      "name": "fillDropdownByApiName",
+      "description": "Opens a picklist field identified by its data-target-selection-name API attribute (e.g. 'sfdc:RecordField.Case.Origin') and selects the option matching value. Example: fillDropdownByApiName('sfdc:RecordField.Case.Origin', 'sfdc:RecordField.Case.Origin', 'Phone') selects 'Phone' for the Case Channel field.",
+      "compose": [
+        {
+          "element": "picklistByApiName",
+          "args": [
+            {
+              "name": "apiName",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "chain": true,
+          "apply": "getBasePicklist",
+          "returnType": "utam-lightning/pageObjects/picklist"
+        },
+        {
+          "chain": true,
+          "apply": "getBaseCombobox",
+          "returnType": "utam-lightning/pageObjects/baseCombobox"
+        },
+        {
+          "chain": true,
+          "apply": "expand"
+        },
+        {
+          "element": "picklistByApiName",
+          "args": [
+            {
+              "name": "apiNameReselect",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "chain": true,
+          "apply": "getBasePicklist",
+          "returnType": "utam-lightning/pageObjects/picklist"
+        },
+        {
+          "chain": true,
+          "apply": "getBaseCombobox",
+          "returnType": "utam-lightning/pageObjects/baseCombobox"
+        },
+        {
+          "chain": true,
+          "apply": "pickItemByLabel",
+          "args": [
+            {
+              "name": "value",
+              "type": "string"
+            }
+          ]
         }
       ]
     }
