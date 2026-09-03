@@ -1,0 +1,20 @@
+{
+  "description": {
+    "author": "Salesforce",
+    "text": [
+      "Selector: flexipage-field.",
+      "Wraps one flexipage-field. Call getWidget(<predefined PO>) — RecordPicklist, Lookup,",
+      "Datepicker, Textarea or Input — instead of declaring one element per widget type."
+    ]
+  },
+  "elements": [
+    {
+      "name": "widget",
+      "type": "container",
+      "public": true,
+      "selector": {
+        "css": "records-record-picklist, lightning-lookup, lightning-datepicker, lightning-textarea, lightning-input"
+      }
+    }
+  ]
+}
