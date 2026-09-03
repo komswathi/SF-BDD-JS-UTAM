@@ -18,3 +18,17 @@
     }
   ]
 }
+
+
+{
+      "name": "widgetByField",
+      "type": "container",
+      "public": true,
+      "nullable": true,
+      "selector": {
+        "css": "flexipage-field[data-field-id='%s'] :is(records-record-picklist, lightning-lookup, lightning-datepicker, lightning-textarea, lightning-input)",
+        "args": [
+          { "name": "fieldId", "type": "string" }
+        ]
+      }
+    }
