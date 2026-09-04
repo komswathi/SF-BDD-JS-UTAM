@@ -50,3 +50,24 @@
     const first = slots[0];
     console.log('C) does :scope ~ [slot=columns] reach the 2nd, run from the 1st node:',
       first?.querySelectorAll(":scope ~ [slot='columns']").length);
+
+      {
+        "description": {
+          "author": "Salesforce",
+          "text": [
+            "Selector: flexipage-field-section2.",
+            "Get every flexipage-field across all [slot='columns'] groups in this section."
+          ]
+        },
+        "elements": [
+          {
+            "name": "content",
+            "type": "container",
+            "public": true,
+            "selector": {
+              "css": "[slot='columns'] flexipage-field",
+              "returnAll": true
+            }
+          }
+        ]
+      }
