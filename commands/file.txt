@@ -32,3 +32,21 @@
         ]
       }
     }
+
+
+    function deepQ(sel, root = document, out = []) {
+      root.querySelectorAll(sel).forEach(e => out.push(e));
+      root.querySelectorAll('*').forEach(e => e.shadowRoot && deepQ(sel, e.shadowRoot, out));
+      return out;
+    }
+
+    const sections = deepQ('flexipage-field-section2');
+    console.log('A) total sections on page:', sections.length);
+
+    const section = sections[0];
+    const slots = section.querySelectorAll("[slot='columns']");
+    console.log('B) slot="columns" nodes WITHIN this one section:', slots.length);
+
+    const first = slots[0];
+    console.log('C) does :scope ~ [slot=columns] reach the 2nd, run from the 1st node:',
+      first?.querySelectorAll(":scope ~ [slot='columns']").length);
