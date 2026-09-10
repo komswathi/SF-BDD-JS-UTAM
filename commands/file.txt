@@ -71,3 +71,38 @@
           }
         ]
       }
+
+      A couple of small fixes — duplicate word and one grammar slip:
+
+      - "Installed required tools installed" → "Installed required tools"
+      - "this can be validate completely extensively" → "this can be validated more thoroughly"
+
+      Here's the clean final version:
+
+      ---
+
+      **Subject: Salesforce UTAM Automation — Progress Update**
+
+      Hi [Manager's name],
+
+      We would like to share an update on the Salesforce test automation build.
+
+      The update on the setup for the framework is as below:
+
+      - Installed required tools (Node.js, WebStorm, and other supporting dependencies)
+      - NPM proxy configuration
+      - WebdriverIO/UTAM integrated
+      - UTAM compiler configuration
+
+      We've also configured and validated parallel execution (this can be validated more thoroughly during full-length scenarios and refactored if needed), set up HTML reports with screenshots attached for every scenario (more detail if a scenario fails), and secured the confidential test data (encrypted and not stored in the code).
+
+      As a first working example, we automated a new Case creation flow using Salesforce's built-in page objects and asserted that the confirmation message for success is displayed.
+
+      On security: Email was sent to InfoSec for WebdriverIO approval after IT Services and Infrastructure checked the npm build logs and dependency list. They recommended we add a scanner (AZDO and Mend) to the pipeline, which we'll include during pipeline creation.
+
+      Thanks,
+      Swathi
+
+      ---
+
+      Noticed you dropped the "still to do" section from the earlier version — leaving it out on purpose, or should I add it back in?
