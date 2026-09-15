@@ -55,6 +55,7 @@ class AccountCreation extends BasePage {
         const lv = await utam.load(ObjectHome);
         const lvm = await lv.getListViewManager();
         const cl = await lvm.getCommonListInternal();
+        await cl.element.scrollIntoView()
         listViewHeader = await cl.getHeader();
         const actionsContainer = await listViewHeader.getAuraActionsContainer();
         const newButton = await actionsContainer.getActionLink('New');
@@ -350,6 +351,37 @@ class AccountCreation extends BasePage {
             if (text === sectionTitle) return section;
         }
         throw new Error(`Section "${sectionTitle}" not found`);
+    }
+
+    /**
+     * Verify every expected section title is displayed in the open record modal.
+     * Reuses the same predefined records-lwc-record-layout section list as fillAllFields()
+     * (RecordActionWrapper -> RecordForm -> RecordLayout -> getSections -> getSectionTitle).
+     *
+     * @param {string[]} expectedSections section titles from the Gherkin data table
+     */
+    async verifySectionsDisplayed(expectedSections) {
+        const recordLayout = await this.getRecordLayout();
+        const sections = await recordLayout.getSections();
+
+        const displayedTitles = [];
+        for (const section of sections) {
+            const titleElement = await section.getSectionTitle();
+            const title = (await titleElement.getText()).trim();
+            if (title) {
+                displayedTitles.push(title);
+            }
+        }
+        logger.info(`Sections displayed: ${displayedTitles.join(' | ')}`);
+
+        const missingSections = expectedSections.filter(
+            expected => !displayedTitles.includes(expected)
+        );
+
+        if (missingSections.length > 0) {
+            logger.error('Expected sections not displayed', { missingSections, displayedTitles });
+        }
+        expect(missingSections).toEqual([]);
     }
 
 
