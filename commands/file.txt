@@ -106,3 +106,9 @@
       ---
 
       Noticed you dropped the "still to do" section from the earlier version — leaving it out on purpose, or should I add it back in?
+
+      let modal = await utam.load(LookupAdvancedModal);   // your local, fixed copy
+      await modal.type(fieldValue);
+      await modal.waitForRecords();
+      await modal.selectRecord(1);   // verify index below
+      await modal.confirm();
