@@ -18,6 +18,18 @@ When('I search for the existing case {string}', async function (caseNumber) {
   await casePage.searchForCase(caseNumber);
 });
 
+When('I search for {string}', async function (searchTerm) {
+  await casePage.searchForCase(searchTerm);
+});
+
+When('I search globally for {string}', async function (searchTerm) {
+  await casePage.searchGlobal(searchTerm);
+});
+
+When('I select the global search result {string}', async function (searchTerm) {
+  await casePage.selectGlobalSearchResult(searchTerm);
+});
+
 When('I click on the row {string} and wait for the url to contain {string}', async function (rowNumber, urlContains) {
   await casePage.openRecordFromRow(rowNumber, urlContains);
 });

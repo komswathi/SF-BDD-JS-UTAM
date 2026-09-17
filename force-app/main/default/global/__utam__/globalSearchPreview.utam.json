@@ -1,0 +1,18 @@
+{
+  "description": "Global search instant-results record preview pane - the right-hand panel showing the currently-selected/focused suggestion's record. Not modeled by any predefined salesforce-pageobjects type. Confirmed via live DOM: rendered in div#preview (a stable id, referenced by aria-controls on search_dialog-instant-results-list), alongside the results listbox (globalSearchResults.utam.json) in the same assistantPanel dialog overlay. recordLink is a genuine <a href> to the record's URL (data-refid='recordId') - clicking it actually navigates, unlike the results-list item, which per live testing only updates the preview/selection.",
+  "root": true,
+  "selector": {
+    "css": "#preview"
+  },
+  "elements": [
+    {
+      "name": "recordLink",
+      "type": ["clickable", "actionable"],
+      "public": true,
+      "nullable": true,
+      "selector": {
+        "css": "a[data-refid='recordId']"
+      }
+    }
+  ]
+}

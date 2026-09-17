@@ -14,9 +14,13 @@ Feature: Account Creation in Salesforce Sales App
       | Additional Information  |
       | Description Information |
 
-  @test
   Scenario: Verify the edit case works successfully
     When I navigate to "Cases" tab
     And I search for the existing case "00001035"
     And I click on the row "1" and wait for the url to contain "/lightning/r/Case/"
     And I read all the values from the Details tab
+
+    @test
+    Scenario: Verify the edit case works successfully
+      When I search globally for "00001033"
+      And I select the global search result "00001033"
