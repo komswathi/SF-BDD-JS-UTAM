@@ -1,0 +1,259 @@
+{
+  "description": {
+    "author": "Salesforce",
+    "text": [
+      "Selector: lightning-modal",
+      "Local fork of LookupAdvancedModal, corrected against the actual rendered DOM:",
+      "the body class is lightning-record-picker-advanced-modal__body (not lightning-lookup-advanced-modal__body),",
+      "and the internal structure uses lightning-record-picker-advanced-input / -results",
+      "instead of a single lightning-record-picker-advanced element."
+    ]
+  },
+  "root": true,
+  "selector": {
+    "css": "body lightning-overlay-container"
+  },
+  "shadow": {
+    "elements": [
+      {
+        "name": "baseModal",
+        "public": false,
+        "selector": {
+          "css": "lightning-modal-base"
+        },
+        "shadow": {
+          "elements": [
+            {
+              "name": "modal",
+              "public": false,
+              "selector": {
+                "css": "lightning-modal:has(.lightning-record-picker-advanced-modal__body)"
+              },
+              "shadow": {
+                "elements": [
+                  {
+                    "name": "resultsContainer",
+                    "public": false,
+                    "selector": {
+                      "css": "lightning-record-picker-advanced-results"
+                    },
+                    "shadow": {
+                      "elements": [
+                        {
+                          "name": "resultsDatatable",
+                          "public": false,
+                          "type": "utam-lightning/pageObjects/datatable",
+                          "selector": {
+                            "css": "lightning-datatable"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "searchInputContainer",
+                    "public": false,
+                    "selector": {
+                      "css": "lightning-record-picker-advanced-input"
+                    },
+                    "shadow": {
+                      "elements": [
+                        {
+                          "name": "searchInput",
+                          "public": false,
+                          "type": "utam-lightning/pageObjects/input",
+                          "selector": {
+                            "css": "lightning-input"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "selectButton",
+                    "public": false,
+                    "type": "utam-lightning/pageObjects/button",
+                    "selector": {
+                      "css": "lightning-button[data-label='Select']"
+                    }
+                  },
+                  {
+                    "name": "cancelButton",
+                    "public": false,
+                    "type": "utam-lightning/pageObjects/button",
+                    "selector": {
+                      "css": "lightning-button[data-label='Cancel']"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "methods": [
+    {
+      "name": "close",
+      "description": {
+        "text": [
+          "Close the modal"
+        ]
+      },
+      "compose": [
+        {
+          "element": "cancelButton",
+          "apply": "click"
+        }
+      ]
+    },
+    {
+      "name": "confirm",
+      "description": {
+        "text": [
+          "Confirm the selection"
+        ]
+      },
+      "compose": [
+        {
+          "element": "selectButton",
+          "apply": "click"
+        }
+      ]
+    },
+    {
+      "name": "type",
+      "description": {
+        "text": [
+          "Type search terms into the search input"
+        ]
+      },
+      "compose": [
+        {
+          "element": "searchInputContainer"
+        },
+        {
+          "element": "searchInput",
+          "apply": "setText",
+          "args": [
+            {
+              "name": "text",
+              "type": "string"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pressSearchButton",
+      "description": {
+        "text": [
+          "Raise a search"
+        ]
+      },
+      "compose": [
+        {
+          "element": "searchInputContainer"
+        },
+        {
+          "element": "searchInput",
+          "apply": "focus"
+        }
+      ]
+    },
+    {
+      "name": "waitForRecords",
+      "description": {
+        "text": [
+          "Wait for the datatable to have rows"
+        ]
+      },
+      "compose": [
+        {
+          "element": "resultsContainer"
+        },
+        {
+          "apply": "waitFor",
+          "args": [
+            {
+              "type": "function",
+              "predicate": [
+                {
+                  "element": "resultsDatatable",
+                  "apply": "hasRows"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "countRecords",
+      "description": {
+        "text": [
+          "How many records are displayed"
+        ],
+        "return": "number"
+      },
+      "compose": [
+        {
+          "element": "resultsContainer"
+        },
+        {
+          "chain": true,
+          "returnType": "number",
+          "apply": "getNumRows"
+        }
+      ]
+    },
+    {
+      "name": "selectRecord",
+      "description": {
+        "text": [
+          "Select the record with the provided row index"
+        ]
+      },
+      "compose": [
+        {
+          "element": "resultsContainer"
+        },
+        {
+          "element": "resultsDatatable",
+          "apply": "toggleRowSelection",
+          "args": [
+            {
+              "name": "rowIndex",
+              "type": "number"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "isRecordSelected",
+      "description": {
+        "text": [
+          "Check if the record at the given row index is selected"
+        ],
+        "return": "boolean"
+      },
+      "compose": [
+        {
+          "element": "resultsContainer"
+        },
+        {
+          "element": "resultsDatatable",
+          "apply": "isRowSelected",
+          "args": [
+            {
+              "name": "rowIndex",
+              "type": "number"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
