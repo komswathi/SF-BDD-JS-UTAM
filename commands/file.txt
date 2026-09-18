@@ -118,3 +118,11 @@
           return el ? el.outerHTML : null;
       });
       console.log(cell);
+
+      let cell = await browser.execute(() => {
+          const table = document.querySelector('lightning-datatable');
+          if (!table || !table.shadowRoot) return 'no table or no shadowRoot';
+          const el = table.shadowRoot.querySelector("[data-row-number='1'] > :nth-child(3)");
+          return el ? el.outerHTML : null;
+      });
+      console.log(cell);
