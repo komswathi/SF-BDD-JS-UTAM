@@ -126,3 +126,19 @@
           return el ? el.outerHTML : null;
       });
       console.log(cell);
+
+
+      let cell = await browser.execute(() => {
+          function deepQ(sel, root = document, out = []) {
+              root.querySelectorAll(sel).forEach(e => out.push(e));
+              root.querySelectorAll('*').forEach(e => e.shadowRoot && deepQ(sel, e.shadowRoot, out));
+              return out;
+          }
+          const tables = deepQ('lightning-datatable');
+          if (!tables.length) return 'no lightning-datatable found, even piercing shadow roots';
+          const table = tables[0];
+          if (!table.shadowRoot) return 'found the table, but shadowRoot is null (possibly closed shadow)';
+          const el = table.shadowRoot.querySelector("[data-row-number='1'] > :nth-child(3)");
+          return el ? el.outerHTML : 'table found, but selector did not match inside its shadow root';
+      });
+      console.log(cell);
