@@ -112,3 +112,9 @@
       await modal.waitForRecords();
       await modal.selectRecord(1);   // verify index below
       await modal.confirm();
+
+      let cell = await browser.execute(() => {
+          const el = document.querySelector("[data-row-number='1'] > :nth-child(3)");
+          return el ? el.outerHTML : null;
+      });
+      console.log(cell);
