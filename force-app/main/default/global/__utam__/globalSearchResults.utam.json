@@ -1,27 +1,48 @@
 {
-  "description": "Global search instant-results dropdown (search_dialog-instant-results-list / search_dialog-instant-result-item). Not modeled by any predefined salesforce-pageobjects type - a newer, app-specific search assistant component. Confirmed via live DOM: it renders inside the same assistantPanel dialog overlay as lightning-input.saInput (see globalHeader.utam.json and case.creation.page.js searchGlobal()), not inside .oneHeader. Root is scoped by role+aria-label rather than the results-list id, which changes on every render.",
+  "description": "Global search instant-results dropdown (search_dialog-instant-results-list / search_dialog-instant-result-item). Root is the outer search_dialog-instant-results-list custom element, which has its own shadow root (confirmed - a scoped search for the listbox only succeeds when crossed via \"shadow\"). Inside that shadow, the listbox's own children are the individual search_dialog-instant-result-item custom elements, declared as plain \"elements\" (light DOM relative to the outer shadow root). Each search_dialog-instant-result-item is itself a second, separate LWC custom element with its own shadow root (same naming pattern as the outer list, and confirmed live: a scoped search for div[role='option'] directly under the listbox fails with \"can't find elements ... inside its scope element\" even though the listbox itself resolves fine) - so div[role='option'] and its label span are declared under a second nested \"shadow\" block on each item. Since a CSS :has()/text selector cannot cross that second shadow boundary, matching by search text is done in JS (case.creation.page.js) by reading each item's primaryLabel text and comparing, then clicking that item's optionRoot - not via a single parameterized selector.",
   "root": true,
   "selector": {
-    "css": "div[role='listbox'][aria-label='Suggestions']"
+    "css": "search_dialog-instant-results-list"
   },
-  "elements": [
-    {
-      "name": "resultItems",
-      "type": ["clickable", "actionable"],
-      "public": true,
-      "selector": {
-        "css": "div[role='option']",
-        "returnAll": true
-      },
-      "elements": [
-        {
-          "name": "primaryLabel",
-          "public": true,
-          "selector": {
-            "css": ".instant-result-item__content span[title]"
+  "shadow": {
+    "elements": [
+      {
+        "name": "listbox",
+        "selector": {
+          "css": "div[role='listbox'][aria-label='Suggestions']"
+        },
+        "elements": [
+          {
+            "name": "resultItemElements",
+            "public": true,
+            "selector": {
+              "css": "search_dialog-instant-result-item",
+              "returnAll": true
+            },
+            "shadow": {
+              "elements": [
+                {
+                  "name": "optionRoot",
+                  "type": ["clickable", "actionable"],
+                  "public": true,
+                  "nullable": true,
+                  "selector": {
+                    "css": "div[role='option']"
+                  }
+                },
+                {
+                  "name": "primaryLabel",
+                  "public": true,
+                  "nullable": true,
+                  "selector": {
+                    "css": ".instant-result-item__content span[title]"
+                  }
+                }
+              ]
+            }
           }
-        }
-      ]
-    }
-  ]
+        ]
+      }
+    ]
+  }
 }

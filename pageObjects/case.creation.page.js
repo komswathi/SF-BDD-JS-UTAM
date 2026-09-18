@@ -85,37 +85,73 @@ class CaseCreation extends BasePage {
     await searchInput.focus();
     logger.info('searchGlobal: search input focused');
 
-    await searchInput.setText(searchTerm);
-    logger.info(`searchGlobal: text "${searchTerm}" set - readback = "${await searchInput.getValueText()}"`);
+    // Input.setText() sets the value without producing the same discrete keydown/input/keyup
+    // sequence a real user's keystrokes do - confirmed live: after setText(), the listbox
+    // never appeared even after a full 20s wait, though the exact same UI works instantly for
+    // a human typing. Sending real keystrokes via the Actions API (browser.keys) one at a
+    // time, with the field already focused, is much closer to genuine typing and is more
+    // likely to trigger Salesforce's live-search debounce listener.
+    await browser.keys(searchTerm.split(''));
+    logger.info(`searchGlobal: keys sent for "${searchTerm}" - readback = "${await searchInput.getValueText()}"`);
 
-    await browser.keys(['Enter']);
-    logger.info('searchGlobal: Enter pressed');
-
-    await browser.pause(TIMEOUTS.SEARCH_RESULTS);
+    // No Enter - confirmed via a decoded Aura URL fragment (componentDef:
+    // "forceSearch:searchPageDesktop") that Enter navigates away to the full search-results
+    // page, which has no instant-results listbox at all. Wait for the listbox directly
+    // instead of a blind pause, so we find out definitively whether typing alone ever
+    // populates it and how long it actually takes.
+    const listboxAppeared = await browser
+      .waitUntil(() => browser.$("div[role='listbox'][aria-label='Suggestions']").isExisting(), {
+        timeout: 5000,
+        interval: 1000
+      })
+      .catch(() => false);
+    logger.info(`searchGlobal: instant-results listbox present = ${listboxAppeared}`);
+    logger.info(`searchGlobal: current URL = ${await browser.getUrl()}`);
     logger.info('searchGlobal: done');
   }
 
   /**
-   * Click the instant-results suggestion whose primary label matches searchTerm exactly
-   * (e.g. a Case Number), navigating into that record. Call this right after searchGlobal().
-   * Uses a custom globalSearchResults.utam.json since no predefined salesforce-pageobjects
-   * type models this search-assistant dropdown (search_dialog-instant-result-item) - confirmed
-   * via live DOM, it renders in the same assistantPanel overlay as the search input.
+   * Click the instant-results suggestion whose primary label exactly matches searchTerm,
+   * navigating into that record. Call this right after searchGlobal(). Uses a custom
+   * globalSearchResults.utam.json - no predefined salesforce-pageobjects type models this
+   * search-assistant dropdown. There are two nested shadow boundaries: the outer
+   * search_dialog-instant-results-list root has its own shadow root (crossed via "shadow"
+   * to reach the listbox), and each search_dialog-instant-result-item inside the listbox is
+   * itself a second, separate custom element with its own shadow root (crossed via a second
+   * nested "shadow" to reach div[role='option'] and its label). A single CSS :has()/text
+   * selector can't cross that second shadow boundary, so matching is done here in JS -
+   * iterate resultItemElements, read each one's primaryLabel text, and click the optionRoot
+   * of the one that equals searchTerm exactly (never the "Show more results for
+   * "<searchTerm>"" decoy, whose label is that whole phrase, not searchTerm alone).
    */
   async selectGlobalSearchResult(searchTerm) {
     logger.info(`Selecting global search result: ${searchTerm}`);
-    const resultsList = await retryAction(() => utam.load(GlobalSearchResults), 10, 1000);
-    const items = await resultsList.getResultItems();
 
-    for (const item of items) {
-      const label = await item.getPrimaryLabel();
-      const title = await label.getAttribute('title');
-      if (title === searchTerm) {
-        await item.click();
-        return;
-      }
-    }
-    throw new Error(`No global search result found matching "${searchTerm}"`);
+    const item = await retryAction(
+      async () => {
+        const resultsList = await utam.load(GlobalSearchResults);
+        const itemElements = await resultsList.getResultItemElements();
+
+        for (let index = 0; index < itemElements.length; index++) {
+          const labelElement = await resultsList.getPrimaryLabel(index);
+          const label = labelElement ? (await labelElement.getText())?.trim() : null;
+          if (label === searchTerm) {
+            const optionRoot = await resultsList.getOptionRoot(index);
+            if (optionRoot) {
+              return optionRoot;
+            }
+          }
+        }
+
+        throw new Error(`No global search result found matching "${searchTerm}"`);
+      },
+      5,
+      1000
+    );
+
+    logger.info(`selectGlobalSearchResult: clicking match for "${searchTerm}"`);
+    await item.click();
+    await browser.pause(6000);
   }
 
   /**
