@@ -142,3 +142,20 @@
           return el ? el.outerHTML : 'table found, but selector did not match inside its shadow root';
       });
       console.log(cell);
+
+      {
+        "name": "rowHeaderCustomCell",
+        "public": false,
+        "nullable": true,
+        "selector": { "css": "lightning-primitive-custom-cell" },
+        "shadow": {
+          "elements": [
+            {
+              "name": "rowHeaderCellBySelector",
+              "public": true,
+              "type": ["clickable", "actionable"],
+              "selector": { "css": "%s", "args": [{ "name": "selector", "type": "string" }] }
+            }
+          ]
+        }
+      }
