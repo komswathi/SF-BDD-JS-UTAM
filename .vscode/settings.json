@@ -1,0 +1,14 @@
+{
+    "json.schemas": [
+        {
+            "fileMatch": ["*.utam.json"],
+            "url": "https://json.schemastore.org/utam-page-object.json"
+        }
+    ],
+    "cucumber.features": [
+        "features/**/*.feature"
+    ],
+    "cucumber.glue": [
+        "step-definitions/**/*.js"
+    ]
+}

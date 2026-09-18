@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Edge: @case Tag",
+      "type": "node",
+      "request": "launch",
+      "runtimeVersion": "23",
+      "program": "${workspaceFolder}/node_modules/@wdio/cli/bin/wdio.js",
+      "args": [
+        "run",
+        "wdio.chrome.conf.js",
+        "--cucumberOpts.tagExpression=@test"
+      ],
+      "env": {
+        "NODE_OPTIONS": "--no-experimental-require-module",
+        "NODE_TLS_REJECT_UNAUTHORIZED": "0"
+      },
+      "console": "integratedTerminal",
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    }
+  ]
+}
